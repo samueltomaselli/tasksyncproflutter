@@ -24,8 +24,8 @@ class DateTimeRow extends StatelessWidget {
             const SizedBox(
               height: 10,
             ),
-            Obx(() => DateTimeContainer(text: controller.date.value.isEmpty? 'dd/mm/yyyy' : controller.date.value, icon: const Icon(
-              FontAwesomeIcons.calendar,
+            Obx(() => DateTimeContainer(text: controller.date.value.isEmpty? 'dd/mm/yyyy' : controller.date.value, icon: Icon(
+              FontAwesomeIcons.calendar.data,
               color: Colors.white24,
               size: 20,
             ), onTap: () {

@@ -39,199 +39,125 @@ class FirebaseService {
 
     });
   }
+  static bool _isPigeonCast(Object e) {
+    final msg = e.toString();
+    return msg.contains('PigeonUserDetails') || msg.contains('PigeonUserInfo');
+  }
+
+  static Icon get _errorIcon => Icon(
+        FontAwesomeIcons.triangleExclamation.data,
+        color: Colors.red,
+      );
+
+  static Future<User> _authUser(Future<UserCredential> fn) async {
+    try {
+      final cred = await fn;
+      return cred.user ?? auth.currentUser!;
+    } catch (e) {
+      final user = auth.currentUser;
+      if (_isPigeonCast(e) && user != null) return user;
+      rethrow;
+    }
+  }
+
   static Future<void> createAccount() async {
     try {
       signUpController.setLoading(true);
-      final String str = signUpController.email.value.text.toString();
-      final String node = str.substring(0, str.indexOf('@'));
-      database.ref('Accounts').child(node).set({
-        'name': '${signUpController.name.value.text} ',
-        'email': signUpController.email.value.text.toString(),
-        'password': signUpController.password.value.text.toString(),
-      }).then((value) {
-        auth
-            .createUserWithEmailAndPassword(
-                email: signUpController.email.value.text.toString(),
-                password: signUpController.password.value.text.toString())
-            .then((value) {
-          UserPref.setUser(
-              '${signUpController.name.value.text} ',
-              signUpController.email.value.text.toString(),
-              signUpController.password.value.text.toString(),
-              node,
-              value.user!.uid.toString());
-          Utils.showSnackBar(
-              'Sign up',
-              "Account is successfully created",
-              const Icon(
-                Icons.done,
-                color: Colors.white,
-              ));
-          Get.to(HomePage());
-          signUpController.setLoading(false);
-        }).onError((error, stackTrace) {
-          Utils.showSnackBar(
-              'Error',
-              Utils.extractFirebaseError(error.toString()),
-              const Icon(
-                FontAwesomeIcons.triangleExclamation,
-                color: Colors.red,
-              ));
-          signUpController.setLoading(false);
-        });
-      }).onError((error, stackTrace) {
-        Utils.showSnackBar(
-            'Error',
-            Utils.extractFirebaseError(error.toString()),
-            const Icon(
-              FontAwesomeIcons.triangleExclamation,
-              color: Colors.red,
-            ));
-        signUpController.setLoading(false);
+      final email = signUpController.email.value.text.toString();
+      final password = signUpController.password.value.text.toString();
+      final name = '${signUpController.name.value.text} ';
+      final node = email.substring(0, email.indexOf('@'));
+      await database.ref('Accounts').child(node).set({
+        'name': name,
+        'email': email,
+        'password': password,
       });
-    } catch (e) {
+      final user = await _authUser(auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      ));
+      await UserPref.setUser(name, email, password, node, user.uid);
       Utils.showSnackBar(
-          'Error',
-          Utils.extractFirebaseError(e.toString()),
-          const Icon(
-            FontAwesomeIcons.triangleExclamation,
-            color: Colors.red,
-          ));
-      signUpController.setLoading(true);
+        'Sign up',
+        "Account is successfully created",
+        const Icon(Icons.done, color: Colors.white),
+      );
+      Get.to(HomePage());
+    } catch (e) {
+      Utils.showSnackBar('Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
+    } finally {
+      signUpController.setLoading(false);
     }
   }
+
   static Future<void> loginAccount() async {
     try {
       signInController.setLoading(true);
-      auth
-          .signInWithEmailAndPassword(
+      final user = await _authUser(auth.signInWithEmailAndPassword(
         email: signInController.email.value.text.toString(),
         password: signInController.password.value.text.toString(),
-      )
-          .then((value) {
-        String node =
-            value.user!.email!.substring(0, value.user!.email!.indexOf('@'));
-        database.ref('Accounts').child(node).onValue.listen((event) {
-          UserPref.setUser(
-            event.snapshot.child('name').value.toString(),
-            event.snapshot.child('email').value.toString(),
-            event.snapshot.child('password').value.toString(),
-            node,
-            value.toString(),
-          );
-          Utils.showSnackBar(
-              'Sign up',
-              "Successfully Login.Welcome Back!",
-              const Icon(
-                Icons.done,
-                color: Colors.white,
-              ));
-          Get.to(HomePage());
-          signInController.setLoading(false);
-        }).onError((error, stackTrace) {
-          Utils.showSnackBar(
-              'Error',
-              Utils.extractFirebaseError(error.toString()),
-              const Icon(
-                FontAwesomeIcons.triangleExclamation,
-                color: Colors.red,
-              ));
-          signInController.setLoading(false);
-        });
-      }).onError((error, stackTrace) {
-        Utils.showSnackBar(
-            'Error',
-            Utils.extractFirebaseError(error.toString()),
-            const Icon(
-              FontAwesomeIcons.triangleExclamation,
-              color: Colors.red,
-            ));
-        signInController.setLoading(false);
-      });
-    } catch (e) {
+      ));
+      final node = user.email!.substring(0, user.email!.indexOf('@'));
+      final snap = await database.ref('Accounts').child(node).get();
+      await UserPref.setUser(
+        snap.child('name').value.toString(),
+        snap.child('email').value.toString(),
+        snap.child('password').value.toString(),
+        node,
+        user.uid,
+      );
       Utils.showSnackBar(
-          'Error',
-          Utils.extractFirebaseError(e.toString()),
-          const Icon(
-            FontAwesomeIcons.triangleExclamation,
-            color: Colors.red,
-          ));
-      signInController.setLoading(true);
+        'Login',
+        "Successfully Login.Welcome Back!",
+        const Icon(Icons.done, color: Colors.white),
+      );
+      Get.to(HomePage());
+    } catch (e) {
+      Utils.showSnackBar('Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
+    } finally {
+      signInController.setLoading(false);
     }
   }
-  static Future<void> signInwWithGoogle()async{
-    try{
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      googleSignIn.signIn().then((GoogleSignInAccount? googleSignInAccount) async {
-        if (googleSignInAccount != null) {
-          // Get the GoogleSignInAuthentication object
-          final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount.authentication;
-          // Create an AuthCredential object
-          final AuthCredential credential = GoogleAuthProvider.credential(
-            idToken: googleSignInAuthentication.idToken,
-            accessToken: googleSignInAuthentication.accessToken,
-          );
 
-          await auth.signInWithCredential(credential).then((value) {
-            final String str = value.user!.email.toString();
-            final String node = str.substring(0, str.indexOf('@'));
-            database.ref('Accounts').child(node).set({
-              'name' : value.user!.displayName,
-              'email' : value.user!.email,
-            }).then((val) {
-              Utils.showSnackBar(
-                  'Login',
-                  'Successfully Login',
-                  const Icon(
-                    FontAwesomeIcons.triangleExclamation,
-                    color: Colors.red,
-                  ));
-              UserPref.setUser(
-                  value.user!.displayName!,
-                  value.user!.email!,
-                  "NOPASSWORD",
-                  node,
-                  value.user!.uid);
-            }).onError((error, stackTrace) {
-              Utils.showSnackBar(
-                  'Error',
-                  Utils.extractFirebaseError(error.toString()),
-                  const Icon(
-                    FontAwesomeIcons.triangleExclamation,
-                    color: Colors.red,
-                  ));
-              return;
-            });
-          }).onError((error, stackTrace) {
-            Utils.showSnackBar(
-                'Error',
-                Utils.extractFirebaseError(error.toString()),
-                const Icon(
-                  FontAwesomeIcons.triangleExclamation,
-                  color: Colors.red,
-                ));
-            return;
-          });
-        }
-      }).onError((error, stackTrace) {
-        Utils.showSnackBar(
-            'Error',
-            Utils.extractFirebaseError(error.toString()),
-            const Icon(
-              FontAwesomeIcons.triangleExclamation,
-              color: Colors.red,
-            ));
-        return;
+  static Future<void> signInwWithGoogle() async {
+    try {
+      final googleSignIn = GoogleSignIn();
+      GoogleSignInAccount? googleAccount;
+      try {
+        googleAccount = await googleSignIn.signIn();
+      } catch (e) {
+        if (!_isPigeonCast(e)) rethrow;
+        googleAccount = await googleSignIn.signInSilently();
+      }
+      if (googleAccount == null) return;
+      final googleAuth = await googleAccount.authentication;
+      final user = await _authUser(auth.signInWithCredential(
+        GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+          accessToken: googleAuth.accessToken,
+        ),
+      ));
+      final email = user.email.toString();
+      final node = email.substring(0, email.indexOf('@'));
+      await database.ref('Accounts').child(node).set({
+        'name': user.displayName,
+        'email': user.email,
       });
-    }catch(e){
+      await UserPref.setUser(
+        user.displayName ?? '',
+        email,
+        "NOPASSWORD",
+        node,
+        user.uid,
+      );
       Utils.showSnackBar(
-          'Error',
-          Utils.extractFirebaseError(e.toString()),
-          const Icon(
-            FontAwesomeIcons.triangleExclamation,
-            color: Colors.red,
-          ));
+        'Login',
+        'Successfully Login',
+        const Icon(Icons.done, color: Colors.white),
+      );
+      Get.to(HomePage());
+    } catch (e) {
+      Utils.showSnackBar('Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
     }
   }
   static Future<void> signInWithApple()async{

@@ -59,34 +59,35 @@ class AddTaskController extends GetxController{
 
     }catch(e){
        loading.value=false;
-      Utils.showSnackBar('Warning', e.toString(), const Icon(FontAwesomeIcons.triangleExclamation,color: Colors.pinkAccent,));
+      Utils.showSnackBar('Warning', e.toString(), Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
     }
   }
   showProgressPicker(BuildContext context){
     if(title.value.text.toString().isEmpty){
-      Utils.showSnackBar('Warning', 'Add title of your task', const Icon(FontAwesomeIcons.triangleExclamation,color: Colors.pinkAccent,));
+      Utils.showSnackBar('Warning', 'Add title of your task', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
       return;
     }
     if(category.value.text.toString().isEmpty){
-      Utils.showSnackBar('Warning', 'Add category of your task', const Icon(FontAwesomeIcons.triangleExclamation,color: Colors.pinkAccent,));
+      Utils.showSnackBar('Warning', 'Add category of your task', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
       return;
     }
     if(date.value.isEmpty){
-      Utils.showSnackBar('Warning', 'Add date for your task', const Icon(FontAwesomeIcons.triangleExclamation,color: Colors.pinkAccent,));
+      Utils.showSnackBar('Warning', 'Add date for your task', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
       return;
     }
     if(int.parse(Utils.getDaysDiffirece(date.value))<0){
-      Utils.showSnackBar('Warning', 'Please select correct date', const Icon(FontAwesomeIcons.triangleExclamation,color: Colors.pinkAccent,));
+      Utils.showSnackBar('Warning', 'Please select correct date', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
       return;
     }
     ProgressPicker(context);
   }
   pickDate(BuildContext context)async{
+    final now = DateTime.now();
     var pickedDate=await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2023),
-      lastDate: DateTime(2025),
+      initialDate: now,
+      firstDate: DateTime(now.year, now.month, now.day),
+      lastDate: DateTime(now.year + 10),
     );
     if(pickedDate!=null){
       date.value=Utils.formateDate(pickedDate);

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "985139000567",
+    "project_id": "tasksyncpro-1f793",
+    "storage_bucket": "tasksyncpro-1f793.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:985139000567:android:ba9e1038540190a6ae0ff2",
+        "android_client_info": {
+          "package_name": "com.codsoft.to_do_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoSx0Rl2MsBy_xIjfGjgS7ntf8QZiJkGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

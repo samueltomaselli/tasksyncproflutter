@@ -72,12 +72,12 @@ class InputField extends StatelessWidget {
                   ? GestureDetector(
                       onTap: showPass,
                       child: hideText!
-                          ? const TextFieldSufix(
-                              icon: FontAwesomeIcons.eye,
+                          ? TextFieldSufix(
+                              icon: FontAwesomeIcons.eye.data,
                               size: 13,
                             )
-                          : const TextFieldSufix(
-                              icon: FontAwesomeIcons.eyeLowVision,
+                          : TextFieldSufix(
+                              icon: FontAwesomeIcons.eyeLowVision.data,
                               size: 13,
                             ),
                     )

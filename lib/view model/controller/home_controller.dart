@@ -1,4 +1,4 @@
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -94,8 +94,8 @@ class HomeController extends GetxController {
       connectivity = Connectivity();
       // listener for internet state
       connectivity!.onConnectivityChanged.listen((event) async {
-        if (event == ConnectivityResult.mobile ||
-            event == ConnectivityResult.wifi) {
+        if (event.contains(ConnectivityResult.mobile) ||
+            event.contains(ConnectivityResult.wifi)) {
           var list = await db.getPendingUploads();
           for (int i = 0; i < list.length; i++) {
             db.insert(list[i]);

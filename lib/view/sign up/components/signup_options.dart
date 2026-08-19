@@ -14,9 +14,9 @@ class SignUpOptions extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: () => FirebaseService.signInwWithGoogle(),
-          child: const IconContainer(
+          child: IconContainer(
               widget: Icon(
-              FontAwesomeIcons.google,
+              FontAwesomeIcons.google.data,
                 size: 18,
                 color: Colors.white,
               )),

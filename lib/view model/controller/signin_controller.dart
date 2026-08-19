@@ -16,11 +16,11 @@ class SignInController extends GetxController{
 
   void loginAccount(){
     if(!correctEmail.value){
-      Utils.showSnackBar('Warning', 'Enter Correct Email', const Icon(FontAwesomeIcons.triangleExclamation,color: Colors.pink,));
+      Utils.showSnackBar('Warning', 'Enter Correct Email', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pink,));
       return;
     }
     if(password.value.text.toString().length<6){
-      Utils.showSnackBar('Warning', 'Password length should greater than 5', const Icon(FontAwesomeIcons.triangleExclamation,color: Colors.pink,));
+      Utils.showSnackBar('Warning', 'Password length should greater than 5', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pink,));
       return;
     }
 

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -34,7 +34,7 @@ class DbHelper
     var dbClient=await db;
     final Connectivity connectivity=Connectivity();
     var connection=await connectivity.checkConnectivity();
-    if(connection==ConnectivityResult.wifi || connection==ConnectivityResult.mobile){
+    if(connection.contains(ConnectivityResult.wifi) || connection.contains(ConnectivityResult.mobile)){
       dbClient!.insert('Tasks',model.toMap()).then((value) {
         FirebaseService.insertData(model);
       },).onError((error, stackTrace) {
@@ -60,7 +60,7 @@ class DbHelper
           where: 'key = ?',
           whereArgs: [model.key!]).then((value) {
       });
-    if(connection==ConnectivityResult.wifi || connection==ConnectivityResult.mobile){
+    if(connection.contains(ConnectivityResult.wifi) || connection.contains(ConnectivityResult.mobile)){
       FirebaseService.update(model.key!, 'show', 'no');
     }else{
       dbClient.insert('PendingDeletes',model.toMap());
