@@ -327,4 +327,11 @@ class DbHelper {
 
     return count.isNotEmpty;
   }
+
+  Future<void> clearAllData() async {
+    final dbClient = await db;
+    await dbClient!.delete('Tasks');
+    await dbClient.delete('PendingUploads');
+    await dbClient.delete('PendingDeletes');
+  }
 }

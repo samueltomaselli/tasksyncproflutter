@@ -8,13 +8,17 @@ import 'package:to_do_app/view%20model/controller/home_controller.dart';
 import 'package:to_do_app/view/common%20widgets/back_button.dart';
 import 'package:to_do_app/view/home%20page/components/progress_task.dart';
 import 'package:to_do_app/view/home%20page/components/search_field.dart';
+import 'package:to_do_app/view/home%20page/components/side_menu.dart';
 import 'package:to_do_app/view/new%20task/new_task.dart';
 class HomePage extends StatelessWidget {
   HomePage({super.key});
   final controller = Get.put(HomeController());
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
+        drawer: SideMenu(),
         backgroundColor: black,
         floatingActionButton: GestureDetector(
           onTap: () => NewTask(MediaQuery.sizeOf(context)),
@@ -48,11 +52,14 @@ class HomePage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SvgPicture.asset(
-                      AppIcon.menu,
-                      color: Colors.white,
-                      height: 30,
-                      width: 30,
+                    GestureDetector(
+                      onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                      child: SvgPicture.asset(
+                        AppIcon.menu,
+                        color: Colors.white,
+                        height: 30,
+                        width: 30,
+                      ),
                     ),
                     Column(
                       children: [

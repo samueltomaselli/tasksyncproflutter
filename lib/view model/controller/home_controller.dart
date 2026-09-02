@@ -8,6 +8,7 @@ import 'package:to_do_app/utils/utils.dart';
 import 'package:to_do_app/view%20model/DbHelper/db_helper.dart';
 import 'package:to_do_app/view/new%20task/new_task.dart';
 import '../../model/task_model.dart';
+import '../../res/routes/routes.dart';
 
 class HomeController extends GetxController {
   RxMap userData = {}.obs;
@@ -185,6 +186,17 @@ class HomeController extends GetxController {
     } else {
       name.value = fullName;
     }
+  }
+
+  Future<void> logout() async {
+    await FirebaseService.logout();
+    await db.clearAllData();
+    list.clear();
+    userData.value = {};
+    name.value = '';
+    hasData.value = false;
+    taskCount.value = 0;
+    Get.offAllNamed(Routes.signInScreen);
   }
 
   removeFromList(int index) {

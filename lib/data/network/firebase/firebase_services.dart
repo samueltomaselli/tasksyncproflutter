@@ -103,6 +103,15 @@ class FirebaseService {
     }
   }
 
+  static Future<void> logout() async {
+    try {
+      await auth.signOut();
+    } catch (_) {
+      // Local session data is cleared below regardless of remote sign-out.
+    }
+    await UserPref.clearUser();
+  }
+
   static Future<void> signInwWithGoogle() async {
     try {
       final googleSignIn = GoogleSignIn();
