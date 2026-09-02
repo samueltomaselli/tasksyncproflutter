@@ -11,34 +11,16 @@ import 'package:to_do_app/view%20model/controller/signin_controller.dart';
 import 'package:to_do_app/view/home%20page/home_page.dart';
 import '../../../view model/controller/signup_controller.dart';
 
-
 class FirebaseService {
   static final FirebaseAuth auth = FirebaseAuth.instance;
   static final FirebaseDatabase database = FirebaseDatabase.instance;
   static final signInController = Get.put(SignInController());
   static final signUpController = Get.put(SignupController());
 
-
-
-  static Future<void> insertData(TaskModel model)async{
-     String str = auth.currentUser!.email.toString();
-     String node = str.substring(0, str.indexOf('@'));
-    database.ref('Tasks').child(node).child(model.key!).set({
-      'key' : model.key,
-      'title' : model.title,
-      'description' : model.description,
-      'category' : model.category,
-      'date' : model.date,
-      'time' : model.time,
-      'image' : model.image,
-      'periority' : model.periority,
-      'show' : model.show,
-    }).then((value) {
-
-    }).onError((error, stackTrace){
-
-    });
+  static Future<void> insertData(TaskModel model) async {
+    await updateTask(model);
   }
+
   static bool _isPigeonCast(Object e) {
     final msg = e.toString();
     return msg.contains('PigeonUserDetails') || msg.contains('PigeonUserInfo');
@@ -84,7 +66,8 @@ class FirebaseService {
       );
       Get.to(HomePage());
     } catch (e) {
-      Utils.showSnackBar('Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
+      Utils.showSnackBar(
+          'Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
     } finally {
       signUpController.setLoading(false);
     }
@@ -113,7 +96,8 @@ class FirebaseService {
       );
       Get.to(HomePage());
     } catch (e) {
-      Utils.showSnackBar('Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
+      Utils.showSnackBar(
+          'Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
     } finally {
       signInController.setLoading(false);
     }
@@ -157,25 +141,38 @@ class FirebaseService {
       );
       Get.to(HomePage());
     } catch (e) {
-      Utils.showSnackBar('Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
+      Utils.showSnackBar(
+          'Error', Utils.extractFirebaseError(e.toString()), _errorIcon);
     }
   }
-  static Future<void> signInWithApple()async{
-  }
-  static Future<int> childCount()async{
+
+  static Future<void> signInWithApple() async {}
+  static Future<int> childCount() async {
     String str = auth.currentUser!.email.toString();
     String node = str.substring(0, str.indexOf('@'));
-    return database.ref('Tasks').child(node).once().then((value){
+    return database.ref('Tasks').child(node).once().then((value) {
       return value.snapshot.children.length;
     });
   }
-  static Future<void> update(String key,String updateKey,String updateValue) async{
+
+  static Future<void> update(
+      String key, String updateKey, String updateValue) async {
     String str = auth.currentUser!.email.toString();
     String node = str.substring(0, str.indexOf('@'));
-   database.ref('Tasks').child(node).child(key).update({
-     updateKey : updateValue
-   });
+    await database
+        .ref('Tasks')
+        .child(node)
+        .child(key)
+        .update({updateKey: updateValue});
   }
 
-
+  static Future<void> updateTask(TaskModel model) async {
+    String str = auth.currentUser!.email.toString();
+    String node = str.substring(0, str.indexOf('@'));
+    await database
+        .ref('Tasks')
+        .child(node)
+        .child(model.key!)
+        .set(model.toMap());
+  }
 }

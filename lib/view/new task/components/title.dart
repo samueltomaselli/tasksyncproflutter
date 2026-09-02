@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 import 'package:to_do_app/view%20model/controller/add_task_controller.dart';
 import 'package:to_do_app/view/new%20task/components/periority_container.dart';
 import 'add_fild.dart';
+
 class TitlePeriority extends StatelessWidget {
-  final controller = Get.put(AddTaskController());
+  final controller = Get.find<AddTaskController>();
   TitlePeriority({super.key});
   @override
   Widget build(BuildContext context) {
@@ -29,8 +30,8 @@ class TitlePeriority extends StatelessWidget {
               () => AddInputField(
                 controller: controller.title.value,
                 focus: controller.titleFocus.value,
-                onTap: ()=>controller.setTitleFocus(),
-                onTapOutSide: ()=> controller.onTapOutside(),
+                onTap: () => controller.setTitleFocus(),
+                onTapOutSide: () => controller.onTapOutside(),
                 hint: 'Enter task title',
                 width: size.width / 2.2,
               ),
@@ -56,12 +57,17 @@ class TitlePeriority extends StatelessWidget {
               children: [
                 Obx(
                   () => PeriorityContainer(
-                      onTap: ()=> controller.setPeriority(true), focus: controller.lowPeriority.value, type: "Low"),
+                      onTap: () => controller.setPeriority(true),
+                      focus: controller.lowPeriority.value,
+                      type: "Low"),
                 ),
                 const SizedBox(
                   width: 10,
                 ),
-                Obx(()=> PeriorityContainer(onTap: ()=>controller.setPeriority(false), focus: !controller.lowPeriority.value, type: "High")),
+                Obx(() => PeriorityContainer(
+                    onTap: () => controller.setPeriority(false),
+                    focus: !controller.lowPeriority.value,
+                    type: "High")),
               ],
             ),
           ],
