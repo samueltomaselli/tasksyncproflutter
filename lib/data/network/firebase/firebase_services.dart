@@ -65,7 +65,7 @@ class FirebaseService {
       signUpController.setLoading(true);
       final email = signUpController.email.value.text.toString();
       final password = signUpController.password.value.text.toString();
-      final name = '${signUpController.name.value.text} ';
+      final name = '${signUpController.name.value.text}';
       final node = email.substring(0, email.indexOf('@'));
       await database.ref('Accounts').child(node).set({
         'name': name,

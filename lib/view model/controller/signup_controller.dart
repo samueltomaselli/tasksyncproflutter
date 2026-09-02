@@ -20,14 +20,14 @@ class SignupController extends GetxController{
     correctEmail.value=Utils.validateEmail(email.value.text.toString());
   }
   void validateName(){
-    correctName.value=name.value.text.toString().length>5;
+    correctName.value=name.value.text.toString().length>2;
   }
   void setLoading(bool value){
     loading.value=value;
   }
   void createAccount(){
     if(!correctName.value){
-      Utils.showSnackBar('Warning', 'Enter Correct Name', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pink,));
+      Utils.showSnackBar('Warning', 'Name length should greater than 2', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pink,));
       return;
     }
     if(!correctEmail.value){
