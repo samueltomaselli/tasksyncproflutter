@@ -55,13 +55,19 @@ class Utils{
   }
 
 
-  static Future<void> showWarningDailog(BuildContext context,VoidCallback onConfirm) async {
+  static Future<void> showWarningDailog(
+    BuildContext context,
+    VoidCallback onConfirm, {
+    String title = 'Remove Task',
+    String message = 'Are you sure you want to delete this Task?',
+    String confirmLabel = 'Remove',
+  }) async {
     await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Remove Task'),
-          content: const Text('Are you sure you want to delete this Task?'),
+          title: Text(title),
+          content: Text(message),
           actions: [
             TextButton(
               child: const Text('Cancel'),
@@ -70,7 +76,7 @@ class Utils{
               },
             ),
             TextButton(
-              child: const Text('Remove'),
+              child: Text(confirmLabel),
               onPressed: () {
                 onConfirm();
                 Navigator.pop(context);

@@ -31,6 +31,9 @@ class UserPref{
     };
   }
 
-
+  static Future<void> clearUser() async {
+    SharedPreferences pref=await SharedPreferences.getInstance();
+    await pref.clear();
+  }
 
 }
