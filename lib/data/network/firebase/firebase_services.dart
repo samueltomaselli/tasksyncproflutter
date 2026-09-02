@@ -3,17 +3,18 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:to_do_app/Data/shared%20pref/shared_pref.dart';
+import 'package:to_do_app/data/shared%20pref/shared_pref.dart';
 import 'package:to_do_app/model/task_model.dart';
 import 'package:to_do_app/utils/utils.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:to_do_app/view%20model/controller/signin_controller.dart';
 import 'package:to_do_app/view/home%20page/home_page.dart';
 import '../../../view model/controller/signup_controller.dart';
+import 'firebase_mode.dart';
 
 class FirebaseService {
-  static final FirebaseAuth auth = FirebaseAuth.instance;
-  static final FirebaseDatabase database = FirebaseDatabase.instance;
+  static FirebaseAuth get auth => FirebaseAuth.instance;
+  static FirebaseDatabase get database => FirebaseDatabase.instance;
   static final signInController = Get.put(SignInController());
   static final signUpController = Get.put(SignupController());
 
@@ -49,6 +50,16 @@ class FirebaseService {
       final password = signUpController.password.value.text.toString();
       final name = '${signUpController.name.value.text}';
       final node = email.substring(0, email.indexOf('@'));
+      if (!kUseFirebase) {
+        await UserPref.setUser(name, email, password, node, 'local-$node');
+        Utils.showSnackBar(
+          'Sign up',
+          'Linux test mode: account simulated locally (no Firebase)',
+          const Icon(Icons.done, color: Colors.white),
+        );
+        Get.to(HomePage());
+        return;
+      }
       await database.ref('Accounts').child(node).set({
         'name': name,
         'email': email,
@@ -76,6 +87,23 @@ class FirebaseService {
   static Future<void> loginAccount() async {
     try {
       signInController.setLoading(true);
+      if (!kUseFirebase) {
+        const node = 'linuxtester';
+        await UserPref.setUser(
+          'Linux Tester',
+          'tester@local',
+          'local',
+          node,
+          'local-$node',
+        );
+        Utils.showSnackBar(
+          'Login',
+          'Linux test mode: login simulated locally (no Firebase)',
+          const Icon(Icons.done, color: Colors.white),
+        );
+        Get.to(HomePage());
+        return;
+      }
       final user = await _authUser(auth.signInWithEmailAndPassword(
         email: signInController.email.value.text.toString(),
         password: signInController.password.value.text.toString(),
@@ -104,15 +132,25 @@ class FirebaseService {
   }
 
   static Future<void> logout() async {
-    try {
-      await auth.signOut();
-    } catch (_) {
-      // Local session data is cleared below regardless of remote sign-out.
+    if (kUseFirebase) {
+      try {
+        await auth.signOut();
+      } catch (_) {
+        // Local session data is cleared below regardless of remote sign-out.
+      }
     }
     await UserPref.clearUser();
   }
 
   static Future<void> signInwWithGoogle() async {
+    if (!kUseFirebase) {
+      Utils.showSnackBar(
+        'Unavailable',
+        'Google sign-in is disabled in Linux test mode',
+        _errorIcon,
+      );
+      return;
+    }
     try {
       final googleSignIn = GoogleSignIn();
       GoogleSignInAccount? googleAccount;
@@ -157,6 +195,7 @@ class FirebaseService {
 
   static Future<void> signInWithApple() async {}
   static Future<int> childCount() async {
+    if (!kUseFirebase) return 0;
     String str = auth.currentUser!.email.toString();
     String node = str.substring(0, str.indexOf('@'));
     return database.ref('Tasks').child(node).once().then((value) {
@@ -166,6 +205,7 @@ class FirebaseService {
 
   static Future<void> update(
       String key, String updateKey, String updateValue) async {
+    if (!kUseFirebase) return;
     String str = auth.currentUser!.email.toString();
     String node = str.substring(0, str.indexOf('@'));
     await database
@@ -176,6 +216,7 @@ class FirebaseService {
   }
 
   static Future<void> updateTask(TaskModel model) async {
+    if (!kUseFirebase) return;
     String str = auth.currentUser!.email.toString();
     String node = str.substring(0, str.indexOf('@'));
     await database

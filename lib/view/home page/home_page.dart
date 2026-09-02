@@ -41,6 +41,7 @@ class HomePage extends StatelessWidget {
           ),
         ),
         body: SafeArea(
+          child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -142,7 +143,9 @@ class HomePage extends StatelessWidget {
               const SizedBox(
                 height: 30,
               ),
-              Expanded(child: Obx(()=> ListView.builder(
+              Obx(()=> ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: controller.list.length,
                 itemBuilder: (context, index){
                   if(controller.list[index].show=='yes'){
@@ -201,9 +204,9 @@ class HomePage extends StatelessWidget {
                     return const SizedBox();
                   }
                 },
-              )))
+              ))
             ],
           ),
-        ));
+        )));
   }
 }

@@ -1,10 +1,20 @@
+import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:to_do_app/data/network/firebase/firebase_mode.dart';
 import 'package:to_do_app/res/routes/app_routes.dart';
 void main()async{
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  if (Platform.isLinux) {
+    // sqflite has no native Linux implementation either; use the ffi backend.
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+  if (kUseFirebase) {
+    await Firebase.initializeApp();
+  }
   runApp(const MyApp());
 }
 class MyApp extends StatelessWidget {
