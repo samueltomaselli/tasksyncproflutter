@@ -54,6 +54,7 @@ class HomePage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
+                      key: const Key('menuButton'),
                       onTap: () => _scaffoldKey.currentState?.openDrawer(),
                       child: SvgPicture.asset(
                         AppIcon.menu,

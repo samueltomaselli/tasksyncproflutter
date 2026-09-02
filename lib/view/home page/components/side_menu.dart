@@ -34,8 +34,9 @@ class SideMenu extends StatelessWidget {
               leading: const Icon(Icons.logout, color: Colors.pinkAccent),
               title: const Text('Sair', style: TextStyle(color: Colors.white)),
               onTap: () {
+                Navigator.of(context).pop();
                 Utils.showWarningDailog(
-                  context,
+                  Get.context!,
                   () => controller.logout(),
                   title: 'Sair',
                   message: 'Tem certeza que deseja sair da sua conta?',
