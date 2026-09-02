@@ -2,8 +2,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:to_do_app/Data/network/firebase/firebase_services.dart';
-import 'package:to_do_app/Data/shared%20pref/shared_pref.dart';
+import 'package:to_do_app/data/network/firebase/firebase_mode.dart';
+import 'package:to_do_app/data/network/firebase/firebase_services.dart';
+import 'package:to_do_app/data/shared%20pref/shared_pref.dart';
 import 'package:to_do_app/utils/utils.dart';
 import 'package:to_do_app/view%20model/DbHelper/db_helper.dart';
 import 'package:to_do_app/view/new%20task/new_task.dart';
@@ -27,6 +28,7 @@ class HomeController extends GetxController {
     }
     // check for set listeners only for one time
     if (connectivity == null) {
+      if (kUseFirebase) {
       String str = FirebaseService.auth.currentUser!.email.toString();
       String node = str.substring(0, str.indexOf('@'));
       // listener for changing live database
@@ -92,6 +94,7 @@ class HomeController extends GetxController {
           });
         }
       });
+      }
       connectivity = Connectivity();
       // listener for internet state
       connectivity!.onConnectivityChanged.listen((event) async {
@@ -177,10 +180,15 @@ class HomeController extends GetxController {
     getName();
   }
 
-  getName() {
-    name.value = userData['NAME']
-        .toString()
-        .substring(0, userData['NAME'].toString().indexOf(' '));
+  void getName() {
+    final fullName = userData['NAME'].toString();
+    final spaceIndex = fullName.indexOf(' ');
+
+    if (spaceIndex != -1) {
+      name.value = fullName.substring(0, spaceIndex);
+    } else {
+      name.value = fullName;
+    }
   }
 
   removeFromList(int index) {
