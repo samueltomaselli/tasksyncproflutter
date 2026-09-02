@@ -13,7 +13,7 @@ class PeriorityContainer extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 43,
-        width: 73,
+        width: double.infinity,
         margin: const EdgeInsets.only(top: 10),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
@@ -25,13 +25,15 @@ class PeriorityContainer extends StatelessWidget {
           padding: const EdgeInsets.all(3.0),
           child: Container(
             height: 40,
-            width: 70,
+            width: double.infinity,
             alignment: Alignment.center,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: primaryColor),
             child: Text(
               type,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold),

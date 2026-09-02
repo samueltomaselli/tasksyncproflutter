@@ -85,7 +85,7 @@ void main() {
     expect(controller.category.value.text, 'Work');
     expect(controller.description.value.text, 'Current description');
     expect(controller.selectedImageIndex.value, 2);
-    expect(controller.lowPeriority.value, isFalse);
+    expect(controller.periority.value, 'High');
     expect(controller.time.value, '09:30 AM');
     expect(controller.date.value, '10 Sep 2026');
     expect(controller.progress.value, 35);
@@ -103,7 +103,7 @@ void main() {
     controller.category.value.text = 'Personal';
     controller.description.value.text = 'Updated description';
     controller.selectedImageIndex.value = 3;
-    controller.lowPeriority.value = true;
+    controller.periority.value = 'Low';
     controller.time.value = '07:45 PM';
     controller.date.value = '12 Sep 2026';
     controller.progress.value = 80;
@@ -128,6 +128,38 @@ void main() {
       'progress': '80',
     });
     expect(refreshCount, 1);
+  });
+
+  test('a new task defaults to High priority and can be set to Medium', () {
+    final controller = AddTaskController(
+      database: FakeDbHelper(),
+      onRefresh: () async {},
+    );
+
+    expect(controller.periority.value, 'High');
+
+    controller.setPeriority('Medium');
+    expect(controller.periority.value, 'Medium');
+
+    controller.setPeriority('Low');
+    expect(controller.periority.value, 'Low');
+  });
+
+  test('editing a task and saving it with Medium priority persists Medium',
+      () async {
+    final database = FakeDbHelper();
+    final controller = AddTaskController(
+      database: database,
+      onRefresh: () async {},
+    );
+    controller.startEditing(existingTask());
+    expect(controller.periority.value, 'High');
+
+    controller.setPeriority('Medium');
+    final saved = await controller.saveTask();
+
+    expect(saved, isTrue);
+    expect(database.syncedUpdates.single.periority, 'Medium');
   });
 
   test('resetForm cancels editing without changing or saving the task', () {
