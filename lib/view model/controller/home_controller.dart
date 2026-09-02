@@ -163,11 +163,17 @@ class HomeController extends GetxController {
     userData.value = await UserPref.getUser();
     getName();
   }
-  getName() {
-    name.value = userData['NAME']
-        .toString()
-        .substring(0, userData['NAME'].toString().indexOf(' '));
+  void getName() {
+    final fullName = userData['NAME'].toString();
+    final spaceIndex = fullName.indexOf(' ');
+
+    if (spaceIndex != -1) {
+      name.value = fullName.substring(0, spaceIndex);
+    } else {
+      name.value = fullName;
+    }
   }
+
   removeFromList(int index) {
     db
         .removeFromList(TaskModel(
