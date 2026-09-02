@@ -2,12 +2,14 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:to_do_app/Data/network/firebase/firebase_services.dart';
-import 'package:to_do_app/Data/shared%20pref/shared_pref.dart';
+import 'package:to_do_app/data/network/firebase/firebase_mode.dart';
+import 'package:to_do_app/data/network/firebase/firebase_services.dart';
+import 'package:to_do_app/data/shared%20pref/shared_pref.dart';
 import 'package:to_do_app/utils/utils.dart';
 import 'package:to_do_app/view%20model/DbHelper/db_helper.dart';
 import 'package:to_do_app/view/new%20task/new_task.dart';
 import '../../model/task_model.dart';
+import '../../res/routes/routes.dart';
 
 class HomeController extends GetxController {
   RxMap userData = {}.obs;
@@ -27,6 +29,7 @@ class HomeController extends GetxController {
     }
     // check for set listeners only for one time
     if (connectivity == null) {
+      if (kUseFirebase) {
       String str = FirebaseService.auth.currentUser!.email.toString();
       String node = str.substring(0, str.indexOf('@'));
       // listener for changing live database
@@ -92,6 +95,7 @@ class HomeController extends GetxController {
           });
         }
       });
+      }
       connectivity = Connectivity();
       // listener for internet state
       connectivity!.onConnectivityChanged.listen((event) async {
@@ -176,6 +180,7 @@ class HomeController extends GetxController {
     userData.value = await UserPref.getUser();
     getName();
   }
+
   void getName() {
     final fullName = userData['NAME'].toString();
     final spaceIndex = fullName.indexOf(' ');
@@ -185,6 +190,17 @@ class HomeController extends GetxController {
     } else {
       name.value = fullName;
     }
+  }
+
+  Future<void> logout() async {
+    await FirebaseService.logout();
+    await db.clearAllData();
+    list.clear();
+    userData.value = {};
+    name.value = '';
+    hasData.value = false;
+    taskCount.value = 0;
+    Get.offAllNamed(Routes.signInScreen);
   }
 
   removeFromList(int index) {

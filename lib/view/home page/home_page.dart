@@ -8,13 +8,17 @@ import 'package:to_do_app/view%20model/controller/home_controller.dart';
 import 'package:to_do_app/view/common%20widgets/back_button.dart';
 import 'package:to_do_app/view/home%20page/components/progress_task.dart';
 import 'package:to_do_app/view/home%20page/components/search_field.dart';
+import 'package:to_do_app/view/home%20page/components/side_menu.dart';
 import 'package:to_do_app/view/new%20task/new_task.dart';
 class HomePage extends StatelessWidget {
   HomePage({super.key});
   final controller = Get.put(HomeController());
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
+        drawer: SideMenu(),
         backgroundColor: black,
         floatingActionButton: GestureDetector(
           onTap: () => NewTask(MediaQuery.sizeOf(context)),
@@ -37,6 +41,7 @@ class HomePage extends StatelessWidget {
           ),
         ),
         body: SafeArea(
+          child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -48,11 +53,15 @@ class HomePage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SvgPicture.asset(
-                      AppIcon.menu,
-                      color: Colors.white,
-                      height: 30,
-                      width: 30,
+                    GestureDetector(
+                      key: const Key('menuButton'),
+                      onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                      child: SvgPicture.asset(
+                        AppIcon.menu,
+                        color: Colors.white,
+                        height: 30,
+                        width: 30,
+                      ),
                     ),
                     Column(
                       children: [
@@ -135,7 +144,9 @@ class HomePage extends StatelessWidget {
               const SizedBox(
                 height: 30,
               ),
-              Expanded(child: Obx(()=> ListView.builder(
+              Obx(()=> ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: controller.list.length,
                 itemBuilder: (context, index){
                   if(controller.list[index].show=='yes'){
@@ -194,9 +205,9 @@ class HomePage extends StatelessWidget {
                     return const SizedBox();
                   }
                 },
-              )))
+              ))
             ],
           ),
-        ));
+        )));
   }
 }

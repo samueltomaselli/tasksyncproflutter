@@ -17,7 +17,7 @@ class AddTaskController extends GetxController {
   TaskModel? editingTask;
   RxBool isEditing = false.obs;
   RxInt selectedImageIndex = 1.obs;
-  RxBool lowPeriority = true.obs;
+  RxString periority = 'High'.obs;
   RxBool titleFocus = false.obs;
   RxBool categoryFocus = false.obs;
   RxBool descriptionFocus = false.obs;
@@ -36,7 +36,7 @@ class AddTaskController extends GetxController {
     category.value.text = task.category ?? '';
     description.value.text = task.description ?? '';
     selectedImageIndex.value = _imageIndex(task.image);
-    lowPeriority.value = task.periority != 'High';
+    periority.value = task.periority ?? 'High';
     time.value = task.time ?? '';
     date.value = task.date ?? '';
     progress.value = double.tryParse(task.progress ?? '') ?? 0;
@@ -49,7 +49,7 @@ class AddTaskController extends GetxController {
     category.value.clear();
     description.value.clear();
     selectedImageIndex.value = 1;
-    lowPeriority.value = true;
+    periority.value = 'High';
     time.value = '';
     date.value = '';
     progress.value = 0;
@@ -83,7 +83,7 @@ class AddTaskController extends GetxController {
             DateTime.now().microsecondsSinceEpoch.toString(),
         time: time.value,
         date: date.value,
-        periority: lowPeriority.value ? 'Low' : 'High',
+        periority: periority.value,
         description: description.value.text,
         category: category.value.text,
         title: title.value.text,
@@ -207,8 +207,8 @@ class AddTaskController extends GetxController {
     descriptionFocus.value = true;
   }
 
-  setPeriority(bool value) {
-    lowPeriority.value = value;
+  setPeriority(String value) {
+    periority.value = value;
   }
 
   setImage(int index) {
