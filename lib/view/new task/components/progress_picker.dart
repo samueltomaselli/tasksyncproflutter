@@ -6,7 +6,7 @@ import '../../../res/app_color.dart';
 
 class ProgressPicker {
   ProgressPicker(BuildContext context) {
-    final controller = Get.put(AddTaskController());
+    final controller = Get.find<AddTaskController>();
     showDialog(
       context: context,
       builder: (context) {
@@ -69,14 +69,17 @@ class ProgressPicker {
                         style: TextStyle(color: Colors.white),
                       )),
                   TextButton(
-                      onPressed: () {
-                        Get.back();
-                        controller.insertDataInDatabase();
+                      onPressed: () async {
+                        final saved = await controller.saveTask();
+                        if (saved) {
+                          Get.back();
+                          Get.back();
+                        }
                       },
-                      child: const Text(
-                        "Create",
-                        style: TextStyle(color: Colors.white),
-                      ))
+                      child: Obx(() => Text(
+                            controller.isEditing.value ? "Update" : "Create",
+                            style: const TextStyle(color: Colors.white),
+                          )))
                 ],
               ),
             )

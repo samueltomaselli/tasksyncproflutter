@@ -26,6 +26,13 @@ class TaskModel {
       required this.progress,
       required this.status});
 
+  int get progressPercentage {
+    final value = double.tryParse(progress ?? '') ?? 0;
+    return value.clamp(0, 100).round();
+  }
+
+  double get progressFraction => progressPercentage / 100;
+
   TaskModel.fromMap(Map<String, dynamic> res) {
     key = res['key'];
     title = res['title'];
@@ -36,8 +43,8 @@ class TaskModel {
     show = res['show'];
     time = res['time'];
     date = res['date'];
-    progress=res['progress'];
-    status=res['status'];
+    progress = res['progress'];
+    status = res['status'];
   }
 
   Map<String, Object?> toMap() {
@@ -51,8 +58,8 @@ class TaskModel {
       'time': time,
       'date': date,
       'show': show,
-      'status' : status,
-      'progress' : progress,
+      'status': status,
+      'progress': progress,
     };
   }
 }

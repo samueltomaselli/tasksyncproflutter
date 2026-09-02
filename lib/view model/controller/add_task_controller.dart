@@ -8,124 +8,224 @@ import 'package:to_do_app/view%20model/DbHelper/db_helper.dart';
 import 'package:to_do_app/view%20model/controller/home_controller.dart';
 import 'package:to_do_app/view/new%20task/components/progress_picker.dart';
 
-class AddTaskController extends GetxController{
-  final DbHelper database=DbHelper();
-  final controller=Get.put(HomeController());
-  RxInt selectedImageIndex=1.obs;
-  RxBool lowPeriority=true.obs;
-  RxBool titleFocus=false.obs;
-  RxBool categoryFocus=false.obs;
-  RxBool descriptionFocus=false.obs;
-  RxBool loading=false.obs;
-  RxDouble progress=0.0.obs;
-  Rx<TextEditingController> title=TextEditingController().obs;
-  Rx<TextEditingController> description=TextEditingController().obs;
-  Rx<TextEditingController> category=TextEditingController().obs;
-  RxString time=''.obs;
-  RxString date=''.obs;
+class AddTaskController extends GetxController {
+  AddTaskController({DbHelper? database, this.onRefresh})
+      : database = database ?? DbHelper();
 
+  final DbHelper database;
+  final Future<void> Function()? onRefresh;
+  TaskModel? editingTask;
+  RxBool isEditing = false.obs;
+  RxInt selectedImageIndex = 1.obs;
+  RxBool lowPeriority = true.obs;
+  RxBool titleFocus = false.obs;
+  RxBool categoryFocus = false.obs;
+  RxBool descriptionFocus = false.obs;
+  RxBool loading = false.obs;
+  RxDouble progress = 0.0.obs;
+  Rx<TextEditingController> title = TextEditingController().obs;
+  Rx<TextEditingController> description = TextEditingController().obs;
+  Rx<TextEditingController> category = TextEditingController().obs;
+  RxString time = ''.obs;
+  RxString date = ''.obs;
 
+  void startEditing(TaskModel task) {
+    editingTask = task;
+    isEditing.value = true;
+    title.value.text = task.title ?? '';
+    category.value.text = task.category ?? '';
+    description.value.text = task.description ?? '';
+    selectedImageIndex.value = _imageIndex(task.image);
+    lowPeriority.value = task.periority != 'High';
+    time.value = task.time ?? '';
+    date.value = task.date ?? '';
+    progress.value = double.tryParse(task.progress ?? '') ?? 0;
+  }
 
-  insertDataInDatabase() async {
-    try{
-      loading.value=true;
-     await database.insert(TaskModel(
-       progress: progress.value.toInt().toString(),
-          status: 'unComplete',
-          key: DateTime.now().microsecondsSinceEpoch.toString(),
-          time: time.value,
-          date: date.value,
-          periority: lowPeriority.value ? 'High' : 'Low',
-          description: description.value.text.toString(),
-          category: category.value.text.toString(),
-          title: title.value.text.toString(),
-          image: Utils.getImage()[selectedImageIndex.value],
-          show: 'yes'
-     )).then((value) async {
-       controller.getTaskData();
-       title.value.clear();
-       category.value.clear();
-       date.value='';
-       time.value='';
-       progress.value=0.0;
-       selectedImageIndex.value=1;
-            await Future.delayed(const Duration(milliseconds: 700));
-       loading.value=false;
+  void resetForm() {
+    editingTask = null;
+    isEditing.value = false;
+    title.value.clear();
+    category.value.clear();
+    description.value.clear();
+    selectedImageIndex.value = 1;
+    lowPeriority.value = true;
+    time.value = '';
+    date.value = '';
+    progress.value = 0;
+    loading.value = false;
+    onTapOutside();
+  }
 
-            Get.back();
-     }).onError((error, stackTrace){
-       loading.value=false;
-     });
+  int _imageIndex(String? image) {
+    final match =
+        Utils.getImage().entries.where((entry) => entry.value == image);
+    return match.isEmpty ? 1 : match.first.key;
+  }
 
-    }catch(e){
-       loading.value=false;
-      Utils.showSnackBar('Warning', e.toString(), Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
+  Future<void> _refreshTasks() async {
+    if (onRefresh != null) {
+      await onRefresh!();
+      return;
+    }
+    if (Get.isRegistered<HomeController>()) {
+      await Get.find<HomeController>().getTaskData();
     }
   }
-  showProgressPicker(BuildContext context){
-    if(title.value.text.toString().isEmpty){
-      Utils.showSnackBar('Warning', 'Add title of your task', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
+
+  Future<bool> saveTask() async {
+    if (loading.value) return false;
+    try {
+      loading.value = true;
+      final currentTask = editingTask;
+      final task = TaskModel(
+        key: currentTask?.key ??
+            DateTime.now().microsecondsSinceEpoch.toString(),
+        time: time.value,
+        date: date.value,
+        periority: lowPeriority.value ? 'Low' : 'High',
+        description: description.value.text,
+        category: category.value.text,
+        title: title.value.text,
+        image: Utils.getImage()[selectedImageIndex.value],
+        show: currentTask?.show ?? 'yes',
+        progress: progress.value.toInt().toString(),
+        status: currentTask?.status ?? 'unComplete',
+      );
+
+      if (currentTask == null) {
+        await database.insert(task);
+      } else {
+        await database.updateAndSync(task);
+      }
+      await _refreshTasks();
+      return true;
+    } catch (e) {
+      Utils.showSnackBar(
+        'Warning',
+        e.toString(),
+        Icon(
+          FontAwesomeIcons.triangleExclamation.data,
+          color: Colors.pinkAccent,
+        ),
+      );
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  showProgressPicker(BuildContext context) {
+    if (title.value.text.toString().isEmpty) {
+      Utils.showSnackBar(
+          'Warning',
+          'Add title of your task',
+          Icon(
+            FontAwesomeIcons.triangleExclamation.data,
+            color: Colors.pinkAccent,
+          ));
       return;
     }
-    if(category.value.text.toString().isEmpty){
-      Utils.showSnackBar('Warning', 'Add category of your task', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
+    if (category.value.text.toString().isEmpty) {
+      Utils.showSnackBar(
+          'Warning',
+          'Add category of your task',
+          Icon(
+            FontAwesomeIcons.triangleExclamation.data,
+            color: Colors.pinkAccent,
+          ));
       return;
     }
-    if(date.value.isEmpty){
-      Utils.showSnackBar('Warning', 'Add date for your task', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
+    if (date.value.isEmpty) {
+      Utils.showSnackBar(
+          'Warning',
+          'Add date for your task',
+          Icon(
+            FontAwesomeIcons.triangleExclamation.data,
+            color: Colors.pinkAccent,
+          ));
       return;
     }
-    if(int.parse(Utils.getDaysDiffirece(date.value))<0){
-      Utils.showSnackBar('Warning', 'Please select correct date', Icon(FontAwesomeIcons.triangleExclamation.data,color: Colors.pinkAccent,));
+    final isPastDate = int.parse(Utils.getDaysDiffirece(date.value)) < 0;
+    final keptOriginalDate = isEditing.value && date.value == editingTask?.date;
+    if (isPastDate && !keptOriginalDate) {
+      Utils.showSnackBar(
+          'Warning',
+          'Please select correct date',
+          Icon(
+            FontAwesomeIcons.triangleExclamation.data,
+            color: Colors.pinkAccent,
+          ));
       return;
     }
     ProgressPicker(context);
   }
-  pickDate(BuildContext context)async{
+
+  pickDate(BuildContext context) async {
     final now = DateTime.now();
-    var pickedDate=await showDatePicker(
+    var pickedDate = await showDatePicker(
       context: context,
       initialDate: now,
       firstDate: DateTime(now.year, now.month, now.day),
       lastDate: DateTime(now.year + 10),
     );
-    if(pickedDate!=null){
-      date.value=Utils.formateDate(pickedDate);
+    if (pickedDate != null) {
+      date.value = Utils.formateDate(pickedDate);
     }
   }
-  picTime(BuildContext context)async{
-    TimeOfDay? pickedTime=await showTimePicker(context: context, initialTime: TimeOfDay.now());
-    if(pickedTime!=null){
+
+  picTime(BuildContext context) async {
+    TimeOfDay? pickedTime =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    if (pickedTime != null) {
       DateFormat dateFormat = DateFormat('hh:mm a');
-      time.value=dateFormat.format(DateTime(2323,1,1,pickedTime.hour,pickedTime.minute,));
+      time.value = dateFormat.format(DateTime(
+        2323,
+        1,
+        1,
+        pickedTime.hour,
+        pickedTime.minute,
+      ));
     }
   }
-  setTitleFocus(){
-    titleFocus.value=true;
-    categoryFocus.value=false;
-    descriptionFocus.value=false;
-  }
-  setCategoryFocus(){
-    titleFocus.value=false;
-    categoryFocus.value=true;
-    descriptionFocus.value=false;
-  }
-  setDescriptionFocus(){
-    titleFocus.value=false;
-    categoryFocus.value=false;
-    descriptionFocus.value=true;
-  }
-  setPeriority(bool value){
-    lowPeriority.value=value;
-  }
-  setImage(int index){
-    selectedImageIndex.value=index;
-  }
-  onTapOutside(){
-    titleFocus.value=false;
-    categoryFocus.value=false;
-    descriptionFocus.value=false;
+
+  setTitleFocus() {
+    titleFocus.value = true;
+    categoryFocus.value = false;
+    descriptionFocus.value = false;
   }
 
+  setCategoryFocus() {
+    titleFocus.value = false;
+    categoryFocus.value = true;
+    descriptionFocus.value = false;
+  }
 
+  setDescriptionFocus() {
+    titleFocus.value = false;
+    categoryFocus.value = false;
+    descriptionFocus.value = true;
+  }
+
+  setPeriority(bool value) {
+    lowPeriority.value = value;
+  }
+
+  setImage(int index) {
+    selectedImageIndex.value = index;
+  }
+
+  onTapOutside() {
+    titleFocus.value = false;
+    categoryFocus.value = false;
+    descriptionFocus.value = false;
+  }
+
+  @override
+  void onClose() {
+    title.value.dispose();
+    category.value.dispose();
+    description.value.dispose();
+    super.onClose();
+  }
 }

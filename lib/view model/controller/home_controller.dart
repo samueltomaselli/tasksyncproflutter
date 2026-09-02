@@ -6,6 +6,7 @@ import 'package:to_do_app/Data/network/firebase/firebase_services.dart';
 import 'package:to_do_app/Data/shared%20pref/shared_pref.dart';
 import 'package:to_do_app/utils/utils.dart';
 import 'package:to_do_app/view%20model/DbHelper/db_helper.dart';
+import 'package:to_do_app/view/new%20task/new_task.dart';
 import '../../model/task_model.dart';
 
 class HomeController extends GetxController {
@@ -75,8 +76,8 @@ class HomeController extends GetxController {
         for (var element in event.snapshot.children) {
           db
               .update(TaskModel(
-              progress: element.child('progress').value.toString(),
-              status: element.child('status').value.toString(),
+                  progress: element.child('progress').value.toString(),
+                  status: element.child('status').value.toString(),
                   key: element.child('key').value.toString(),
                   time: element.child('time').value.toString(),
                   date: element.child('date').value.toString(),
@@ -98,14 +99,20 @@ class HomeController extends GetxController {
             event.contains(ConnectivityResult.wifi)) {
           var list = await db.getPendingUploads();
           for (int i = 0; i < list.length; i++) {
-            db.insert(list[i]);
-            db.delete(list[i].key!, 'PendingUploads');
+            try {
+              await db.syncPendingUpload(list[i]);
+            } catch (_) {
+              // Keep the item pending so a later connectivity event can retry.
+            }
           }
           list.clear();
           list = await db.getPendingDeletes();
           for (int i = 0; i < list.length; i++) {
-            FirebaseService.update(list[i].key!, 'show', 'no');
-            db.delete(list[i].key!, 'PendingDeletes');
+            try {
+              await db.syncPendingDelete(list[i]);
+            } catch (_) {
+              // Keep the deletion pending for a later retry.
+            }
           }
           getTaskData();
         }
@@ -128,46 +135,54 @@ class HomeController extends GetxController {
       taskCount.value = 0;
     }
   }
+
   popupMenuSelected(int value, int index, BuildContext context) async {
-    if (value == 2) {
+    if (value == 1) {
+      NewTask(MediaQuery.sizeOf(context), task: list[index]);
+    } else if (value == 2) {
       Utils.showWarningDailog(context, () => removeFromList(index));
     }
   }
+
   getTaskData() async {
-    list.value = await db.getData();
-    var tempList = await db.getPendingUploads();
-    for (int i = 0; i < tempList.length; i++) {
-      list.add(tempList[i]);
-    }
+    list.value = await db.getDataWithPending();
     checkData();
   }
+
   Future<List<TaskModel>> getFututeData() {
     return db.getData();
   }
+
   onClear(BuildContext context) {
     searchController.value.text = '';
     hasText.value = false;
     onTapOutside(context);
   }
+
   onTapOutside(BuildContext context) {
     focus.value = false;
     FocusScope.of(context).unfocus();
   }
+
   checkText() {
     hasText.value = searchController.value.text.toString().isNotEmpty;
   }
+
   onTapField() {
     focus.value = true;
   }
+
   getUserData() async {
     userData.value = await UserPref.getUser();
     getName();
   }
+
   getName() {
     name.value = userData['NAME']
         .toString()
         .substring(0, userData['NAME'].toString().indexOf(' '));
   }
+
   removeFromList(int index) {
     db
         .removeFromList(TaskModel(

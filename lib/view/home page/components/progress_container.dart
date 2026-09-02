@@ -132,7 +132,7 @@ class ProgressContainer extends StatelessWidget {
                 const SizedBox(
                   height: 10,
                 ),
-                 Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
@@ -143,7 +143,7 @@ class ProgressContainer extends StatelessWidget {
                           fontSize: 12),
                     ),
                     Text(
-                      '60%',
+                      '${controller.list[index].progressPercentage}%',
                       style: const TextStyle(
                           color: Colors.white70,
                           fontWeight: FontWeight.bold,
@@ -156,9 +156,8 @@ class ProgressContainer extends StatelessWidget {
                 ),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child:  LinearProgressIndicator(
-                    value: 0.6,
-                    // double.parse(controller.list[index].progress)/100.0
+                  child: LinearProgressIndicator(
+                    value: controller.list[index].progressFraction,
                     backgroundColor: Colors.deepPurple,
                     color: Colors.white,
                   ),
