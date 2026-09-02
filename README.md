@@ -24,6 +24,8 @@ Welcome to the Beautiful Task Scheduler App repository! This Flutter-based task 
 
 ## Installation
 
+> **Running on Linux?** See [RUNNING_LINUX.md](RUNNING_LINUX.md) for Flutter/Android SDK setup via `mise`, a case-sensitivity fix, and how to work around an Android Emulator + Hyprland keyboard-focus bug using `scrcpy`.
+
 1. Clone this repository using `git clone https://github.com/Hamad-Anwar/Task-Sync-Pro-Flutter.git
 2. Navigate to the project directory: `cd task-scheduler-app`
 3. Install dependencies: `flutter pub get`
