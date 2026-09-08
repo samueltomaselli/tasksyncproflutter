@@ -16,26 +16,13 @@ class HomeController extends GetxController {
   RxString name = ''.obs;
   RxBool focus = false.obs;
   RxBool hasText = false.obs;
-  final searchQuery = ''.obs;
-
-  List<int> get visibleTaskIndices {
-    final query = searchQuery.value.trim().toLowerCase();
-    return [
-      for (var index = 0; index < list.length; index++)
-        if (list[index].show == 'yes' &&
-            (list[index].title ?? '').toLowerCase().contains(query))
-          index,
-    ];
-  }
   RxInt taskCount = 0.obs;
   RxBool hasData = false.obs;
   final DbHelper db = DbHelper();
   RxList list = [].obs;
   Connectivity? connectivity;
   final searchController = TextEditingController().obs;
-  @override
-  void onInit() {
-    super.onInit();
+  HomeController() {
     // if name not loaded
     if (userData['NAME'] == null) {
       getUserData();
@@ -172,7 +159,7 @@ class HomeController extends GetxController {
 
   onClear(BuildContext context) {
     searchController.value.text = '';
-    checkText();
+    hasText.value = false;
     onTapOutside(context);
   }
 
@@ -183,7 +170,6 @@ class HomeController extends GetxController {
 
   checkText() {
     hasText.value = searchController.value.text.toString().isNotEmpty;
-    searchQuery.value = searchController.value.text;
   }
 
   onTapField() {
