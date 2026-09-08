@@ -10,7 +10,7 @@ import '../../sign up/components/textfield_sufiix.dart';
 
 class SearchField extends StatelessWidget {
    SearchField({super.key});
-  final controller = Get.find<HomeController>();
+  final controller=Get.put(HomeController());
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
