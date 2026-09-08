@@ -12,7 +12,9 @@ import 'package:to_do_app/view/home%20page/components/side_menu.dart';
 import 'package:to_do_app/view/new%20task/new_task.dart';
 class HomePage extends StatelessWidget {
   HomePage({super.key});
-  final controller = Get.put(HomeController());
+  final controller = Get.isRegistered<HomeController>()
+      ? Get.find<HomeController>()
+      : Get.put(HomeController());
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
@@ -144,11 +146,14 @@ class HomePage extends StatelessWidget {
               const SizedBox(
                 height: 30,
               ),
-              Obx(()=> ListView.builder(
+              Obx(() {
+                final indices = controller.visibleTaskIndices;
+                return ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.list.length,
-                itemBuilder: (context, index){
+                itemCount: indices.length,
+                itemBuilder: (context, position){
+                  final index = indices[position];
                   if(controller.list[index].show=='yes'){
                      return Column(
                       children: [
@@ -205,7 +210,8 @@ class HomePage extends StatelessWidget {
                     return const SizedBox();
                   }
                 },
-              ))
+              );
+              })
             ],
           ),
         )));

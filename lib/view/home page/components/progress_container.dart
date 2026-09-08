@@ -11,7 +11,7 @@ import '../../common widgets/back_button.dart';
 class ProgressContainer extends StatelessWidget {
   final int index;
   ProgressContainer({super.key, required this.index});
-  final controller = Get.put(HomeController());
+  final controller = Get.find<HomeController>();
 
   @override
   Widget build(BuildContext context) {

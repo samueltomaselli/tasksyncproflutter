@@ -4,7 +4,7 @@ import 'package:to_do_app/view%20model/controller/home_controller.dart';
 import 'package:to_do_app/view/home%20page/components/progress_container.dart';
 
 class ProgressTask extends StatelessWidget {
-  final controller = Get.put(HomeController());
+  final controller = Get.find<HomeController>();
 
   ProgressTask({super.key});
 
@@ -14,10 +14,13 @@ class ProgressTask extends StatelessWidget {
         height: 210,
         width: MediaQuery.sizeOf(context).width,
         child: Obx(
-          () => ListView.builder(
+          () {
+            final indices = controller.visibleTaskIndices;
+            return ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: controller.list.length,
-            itemBuilder: (context, index) {
+            itemCount: indices.length,
+            itemBuilder: (context, position) {
+              final index = indices[position];
               if (controller.list[index].show == 'yes') {
                 return GestureDetector(
                   onTap: () {
@@ -29,7 +32,8 @@ class ProgressTask extends StatelessWidget {
                 return const SizedBox();
               }
             },
-          ),
+          );
+          },
         ));
   }
 }
