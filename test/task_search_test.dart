@@ -6,11 +6,8 @@ import 'package:to_do_app/view%20model/controller/home_controller.dart';
 import 'package:to_do_app/view/home%20page/home_page.dart';
 import 'package:to_do_app/view/home%20page/components/progress_container.dart';
 
-// Avoid account/network/database initialization; keep the real search behavior.
 class SearchTestController extends HomeController {
   @override
-  // Intentionally skip HomeController's external services in widget tests.
-  // ignore: must_call_super
   void onInit() {}
 }
 
