@@ -4,6 +4,7 @@ import 'package:to_do_app/utils/utils.dart';
 import 'package:to_do_app/view%20model/controller/home_controller.dart';
 
 import '../../../res/app_color.dart';
+import '../../profile page/profile_page.dart';
 
 class SideMenu extends StatelessWidget {
   SideMenu({super.key});
@@ -28,19 +29,31 @@ class SideMenu extends StatelessWidget {
                       fontSize: 20),
                 ),
               ),
+            ),const Divider(color: Colors.white24),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.pinkAccent),
+              title: const Text('Profile', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProfilePage(),
+                  ),
+                );
+              },
             ),
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.pinkAccent),
-              title: const Text('Sair', style: TextStyle(color: Colors.white)),
+              title: const Text('Logout', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.of(context).pop();
                 Utils.showWarningDailog(
                   Get.context!,
                   () => controller.logout(),
-                  title: 'Sair',
-                  message: 'Tem certeza que deseja sair da sua conta?',
-                  confirmLabel: 'Sair',
+                  title: 'Logout',
+                  message: 'Are you sure you want to logout?',
+                  confirmLabel: 'Logout',
                 );
               },
             ),

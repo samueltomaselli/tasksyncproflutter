@@ -14,6 +14,8 @@ import '../../res/routes/routes.dart';
 class HomeController extends GetxController {
   RxMap userData = {}.obs;
   RxString name = ''.obs;
+  RxString email = ''.obs;
+  RxString fullName = ''.obs;
   RxBool focus = false.obs;
   RxBool hasText = false.obs;
   RxInt taskCount = 0.obs;
@@ -179,6 +181,8 @@ class HomeController extends GetxController {
   getUserData() async {
     userData.value = await UserPref.getUser();
     getName();
+    getFullName();
+    getEmail();
   }
 
   void getName() {
@@ -190,6 +194,18 @@ class HomeController extends GetxController {
     } else {
       name.value = fullName;
     }
+  }
+
+  void getFullName() {
+    final name = userData['NAME'].toString();
+
+    fullName.value = name;
+  }
+
+  void getEmail() {
+    final fullEmail = userData['EMAIL'].toString();
+
+    email.value = fullEmail;
   }
 
   Future<void> logout() async {
