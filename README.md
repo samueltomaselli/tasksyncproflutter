@@ -1,90 +1,89 @@
-# Beautiful Task Scheduler App
+# TaskSync Pro
 
-Welcome to the Beautiful Task Scheduler App repository! This Flutter-based task management application combines elegant design with a robust backend, ensuring a seamless and organized task management experience. From stunning UI to real-time synchronization, this app has you covered.
+Aplicativo Flutter de gerenciamento de tarefas, com autenticação e sincronização via Firebase e cache local via SQLite.
 
-## Screenshots
+## Sprint 1 — Análise, Projeto e Desenvolvimento Ágil (Equipe 6)
 
-<img src="demo.png">
+> Este repositório foi herdado como projeto legado para a disciplina de Análise, Projeto e Desenvolvimento Ágil. Esta seção documenta o trabalho da equipe sobre o projeto original de [Hamad Anwar](https://github.com/Hamad-Anwar/Task-Sync-Pro-Flutter).
 
-## Features
+**Equipe 6:** Davi Scheuer, Gustavo Nascimento Caballero, Hallan Rauber Sbardelatti, Otavio Augusto dos Santos e Samuel Henrique Tomaselli.
 
-- **Stunning UI**: Immerse yourself in a visually captivating user interface designed to enhance your task management experience.
+### Contexto (história de usuário)
 
-- **Optimized Backend**: The app's backend is finely tuned for optimal performance, ensuring smooth navigation and operation.
+> "Um colega meu testou o app e travou na hora de ver o nome dele na tela inicial, o nome dele é só uma palavra. Além disso, hoje só dá para marcar uma tarefa como prioridade alta ou baixa, e eu preciso de um nível médio também." — relato da professora, formatado como história de usuário do TaskSync Pro.
 
-- **Offline Access**: With Sqflite integration, the app remains fully functional even when offline, so you can manage tasks without interruptions.
+### Requisitos da Sprint 1
 
-- **Real-time Sync**: The Firebase Realtime Database powers real-time synchronization of tasks across multiple devices, making sure your tasks are up-to-date everywhere.
+| Requisito | Descrição | Estimativa (Planning Poker) | MoSCoW | Status |
+|---|---|---|---|---|
+| RF01 | A saudação da tela inicial não exibia o nome de usuários com nome cadastrado composto por uma única palavra, e a tela travava. | 2 | Must have | ✅ Concluído (PR #1) |
+| RF02 | Adicionar um terceiro nível de prioridade (Média) para tarefas, além de Alta e Baixa. | 5 | Must have | ✅ Concluído (PR #3) |
 
-- **Multi-Device Experience**: Create, update, or delete tasks on one device and see the changes instantly reflected on all devices linked to your account.
+### O que foi feito até o momento
 
-- **Secure Authentication**: Firebase Authentication ensures the security of your tasks and data, allowing you to manage your to-dos with peace of mind.
+- Análise do repositório legado herdado (app Flutter com autenticação e sincronização via Firebase e cache local via SQLite).
+- Correção de erros de build e atualização de pacotes desatualizados (migração de `connectivity` para `connectivity_plus`, ajustes no seletor de datas, configuração do Firebase) para o projeto voltar a rodar em todas as máquinas da equipe.
+- Pesquisa e aplicação de conceitos de Scrum e Extreme Programming (XP) ao contexto do repositório herdado.
+- Levantamento e detalhamento dos requisitos RF01 e RF02 a partir da história de usuário passada pela professora, com estimativa via Planning Poker e priorização via MoSCoW.
+- Organização do backlog em um quadro Kanban no Trello, com tarefas adicionais criadas a partir de bugs e melhorias observados em testes do app.
+- **RF01 implementado**: exigência mínima de 2 caracteres no nome (em vez de 5), nome do usuário passa a aparecer corretamente na Home mesmo quando composto por uma única palavra, e mensagem de aviso ajustada (PR #1).
+- **RF02 implementado**: seletor de prioridade estendido de Alta/Baixa para Alta/Média/Baixa, integrado tanto na criação quanto na edição de tarefas (PR #3).
+- Funcionalidades extras entregues a partir dos bugs e melhorias observados nos testes: edição de tarefas já criadas (PR #2), menu lateral com logout (PR #3), correção da busca que não filtrava a lista (PR #5) e tela de perfil com nome e e-mail (PR #6).
 
-- **Authentication and Session Management**: Utilizing Firebase Authentication and the `firebase_auth` package, the app provides a robust user authentication system. The session management is handled seamlessly, allowing users to securely access their tasks.
+### Vídeo de demonstração
 
-## Installation
+📹 [Inserir aqui o link do vídeo (YouTube não listado / Google Drive) demonstrando RF01 e RF02 funcionando]
 
-> **Running on Linux?** See [RUNNING_LINUX.md](RUNNING_LINUX.md) for Flutter/Android SDK setup via `mise`, a case-sensitivity fix, and how to work around an Android Emulator + Hyprland keyboard-focus bug using `scrcpy`.
+### Diário de bordo
 
-1. Clone this repository using `git clone https://github.com/Hamad-Anwar/Task-Sync-Pro-Flutter.git
-2. Navigate to the project directory: `cd task-scheduler-app`
-3. Install dependencies: `flutter pub get`
-4. **Add `google-services.json`:** For Firebase setup, each developer needs to add their own `google-services.json` file obtained from their Firebase project. Place this file in the `android/app` directory.
-
-5. **Set Up Firebase Authentication:**
-   - Go to the Firebase Console and create a project.
-   - Enable the Email/Password sign-in method.
-   - Add your Android app to the project and download the `google-services.json` file.
-   - Add your iOS app if needed and download the `GoogleService-Info.plist` file.
-
-6. **Set Up Firebase Realtime Database:**
-   - In the Firebase Console, create a Realtime Database.
-   - Set up security rules as per your requirements.
-   - Update the Firebase configuration in your Flutter app code.
-
-7. Run the app: `flutter run`
-
-## Dependencies
-
-This app utilizes the following dependencies:
-
-- **google_fonts: ^5.1.0**: Provides easy access to a wide range of Google Fonts for consistent and appealing typography in the app.
-
-- **get: ^4.6.5**: Offers a clean and reactive state management solution for your Flutter app, simplifying UI updates and interactions.
-
-- **email_validator: ^2.1.17**: Allows you to validate email addresses, ensuring accurate input during user registration and login.
-
-- **font_awesome_flutter: ^10.5.0**: Grants access to a comprehensive library of FontAwesome icons to enhance the visual elements of your app.
-
-- **firebase_core: ^2.15.1**: Essential for initializing and connecting your Flutter app with Firebase services.
-
-- **firebase_auth: ^4.7.3**: Enables robust user authentication using various methods, enhancing app security.
-
-- **firebase_database: ^10.2.5**: Provides integration with the Firebase Realtime Database for real-time synchronization of tasks.
-
-- **shared_preferences: ^2.2.0**: Allows you to store simple key-value pairs on the device, facilitating data persistence.
-
-- **google_sign_in: ^6.1.4**: Streamlines the integration of Google Sign-In functionality for user authentication.
-
-- **sign_in_with_apple: ^5.0.0**: Simplifies the process of adding Apple Sign-In as an authentication option in your app.
-
-- **flutter_svg: ^2.0.7**: Renders SVG images, offering a scalable and resolution-independent solution for graphics.
-
-- **intl: ^0.18.1**: Provides internationalization and localization support, making your app accessible to users from different regions.
-
-- **sqflite: ^2.3.0**: Offers local database capabilities, enabling offline access and data storage even when the app is not connected to the internet.
-
-- **connectivity: ^3.0.6**: Monitors network connectivity, allowing you to adapt your app's behavior based on the user's internet status.
-
-## Contributions
-
-Contributions are welcome! If you find a bug or want to add new features, feel free to open an issue or submit a pull request. Please follow our [contribution guidelines](/CONTRIBUTING.md).
-
-## License
-
-This project is licensed under the [MIT License](/LICENSE).
+Cada integrante da equipe entrega seu diário de bordo individual (modelo "Diário de Bordo") junto com esta entrega, fora deste repositório.
 
 ---
 
-### Designed and developed with ❤️ by [Hamad Anwar](https://www.linkedin.com/in/hamad-anwar/).
-# tasksyncproflutter
+## Instalação
+
+> **Rodando no Linux?** Veja [RUNNING_LINUX.md](RUNNING_LINUX.md) para configuração do Flutter/Android SDK via `mise`, uma correção de case-sensitivity, e como contornar um bug de foco de teclado entre o Android Emulator e o Hyprland usando `scrcpy`.
+
+1. Clone este repositório: `git clone https://github.com/samueltomaselli/tasksyncproflutter.git`
+2. Acesse a pasta do projeto: `cd tasksyncproflutter`
+3. Instale as dependências: `flutter pub get`
+4. **Adicione o `google-services.json`:** para configurar o Firebase, cada desenvolvedor precisa adicionar seu próprio arquivo `google-services.json`, obtido no projeto Firebase da equipe. Coloque este arquivo na pasta `android/app`.
+
+5. **Configure a Autenticação do Firebase:**
+   - Acesse o Firebase Console e crie um projeto.
+   - Habilite o método de login por E-mail/Senha.
+   - Adicione seu app Android ao projeto e baixe o arquivo `google-services.json`.
+   - Se necessário, adicione seu app iOS e baixe o arquivo `GoogleService-Info.plist`.
+
+6. **Configure o Firebase Realtime Database:**
+   - No Firebase Console, crie um Realtime Database.
+   - Defina as regras de segurança de acordo com a necessidade.
+   - Atualize a configuração do Firebase no código do app Flutter.
+
+7. Rode o app: `flutter run`
+
+## Dependências
+
+Principais dependências utilizadas pelo app (ver `pubspec.yaml` para a lista completa):
+
+- **google_fonts**: acesso a uma ampla variedade de fontes do Google para a tipografia do app.
+- **get**: gerenciamento de estado reativo, simplificando atualizações de UI e interações.
+- **email_validator**: validação de endereços de e-mail no cadastro e login.
+- **font_awesome_flutter**: biblioteca de ícones FontAwesome para os elementos visuais do app.
+- **firebase_core**: inicialização e conexão do app Flutter com os serviços do Firebase.
+- **firebase_auth**: autenticação de usuários.
+- **firebase_database**: integração com o Firebase Realtime Database para sincronização em tempo real das tarefas.
+- **shared_preferences**: armazenamento local de chave-valor no dispositivo.
+- **google_sign_in** e **sign_in_with_apple**: login social via Google e Apple.
+- **flutter_svg**: renderização de imagens SVG.
+- **intl**: internacionalização e localização.
+- **sqflite** e **sqflite_common_ffi**: banco de dados local, permitindo acesso offline e persistência de dados mesmo sem conexão com a internet (o `_ffi` dá suporte a desktop/Linux).
+- **connectivity_plus**: monitoramento do estado da conexão com a internet.
+
+## Licença
+
+Este projeto está licenciado sob a [Licença MIT](/LICENSE).
+
+---
+
+### Projeto original desenvolvido por [Hamad Anwar](https://www.linkedin.com/in/hamad-anwar/), herdado e evoluído pela Equipe 6 na disciplina de Análise, Projeto e Desenvolvimento Ágil.
