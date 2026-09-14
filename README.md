@@ -32,7 +32,7 @@ Aplicativo Flutter de gerenciamento de tarefas, com autenticação e sincroniza�
 
 ### Vídeo de demonstração
 
-📹 [Inserir aqui o link do vídeo (YouTube não listado / Google Drive) demonstrando RF01 e RF02 funcionando]
+📹 [Vídeo demonstrando RF01 e RF02 funcionando](https://drive.google.com/file/d/15Pli9tgh6S1N7o_vM_Cw0syiTy5SIX-1/view?usp=drive_link)
 
 ### Diário de bordo
 
