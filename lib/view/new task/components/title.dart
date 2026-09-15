@@ -9,86 +9,70 @@ class TitlePeriority extends StatelessWidget {
   TitlePeriority({super.key});
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          flex: 3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Title',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Obx(
-                () => AddInputField(
-                  controller: controller.title.value,
-                  focus: controller.titleFocus.value,
-                  onTap: () => controller.setTitleFocus(),
-                  onTapOutSide: () => controller.onTapOutside(),
-                  hint: 'Enter task title',
-                  width: double.infinity,
-                ),
-              )
-            ],
+        const Text(
+          'Title',
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 17),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        Obx(
+          () => AddInputField(
+            controller: controller.title.value,
+            focus: controller.titleFocus.value,
+            onTap: () => controller.setTitleFocus(),
+            onTapOutSide: () => controller.onTapOutside(),
+            hint: 'Enter task title',
+            width: double.infinity,
           ),
         ),
         const SizedBox(
-          width: 10,
+          height: 20,
         ),
-        Expanded(
-          flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Periority',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17),
+        const Text(
+          'Priority',
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 17),
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Obx(
+                () => PeriorityContainer(
+                    onTap: () => controller.setPeriority('High'),
+                    focus: controller.periority.value == 'High',
+                    type: "High"),
               ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Obx(
-                      () => PeriorityContainer(
-                          onTap: () => controller.setPeriority('High'),
-                          focus: controller.periority.value == 'High',
-                          type: "High"),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Obx(
-                      () => PeriorityContainer(
-                          onTap: () => controller.setPeriority('Medium'),
-                          focus: controller.periority.value == 'Medium',
-                          type: "Medium"),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Obx(
-                      () => PeriorityContainer(
-                          onTap: () => controller.setPeriority('Low'),
-                          focus: controller.periority.value == 'Low',
-                          type: "Low"),
-                    ),
-                  ),
-                ],
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Obx(
+                () => PeriorityContainer(
+                    onTap: () => controller.setPeriority('Medium'),
+                    focus: controller.periority.value == 'Medium',
+                    type: "Medium"),
               ),
-            ],
-          ),
-        )
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Obx(
+                () => PeriorityContainer(
+                    onTap: () => controller.setPeriority('Low'),
+                    focus: controller.periority.value == 'Low',
+                    type: "Low"),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
