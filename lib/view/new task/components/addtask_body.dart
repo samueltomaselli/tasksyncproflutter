@@ -15,75 +15,84 @@ class TaskBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.sizeOf(context);
-    return Container(
-      height: 750,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: SingleChildScrollView(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const UpperBody(),
-          ImageContainerList(),
-          const SizedBox(
-            height: 20,
-          ),
-          TitlePeriority(),
-          const SizedBox(
-            height: 20,
-          ),
-          const Text(
-            'Category',
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Obx(
-            () => AddInputField(
-              controller: controller.category.value,
-              focus: controller.categoryFocus.value,
-              onTap: () => controller.setCategoryFocus(),
-              onTapOutSide: () => controller.onTapOutside(),
-              hint: 'Pick a Category',
-              width: size.width,
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 750,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: SingleChildScrollView(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const UpperBody(),
+            ImageContainerList(),
+            const SizedBox(
+              height: 20,
             ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          const Text(
-            'Description',
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Obx(
-            () => AddInputField(
-              controller: controller.description.value,
-              focus: controller.descriptionFocus.value,
-              onTap: () => controller.setDescriptionFocus(),
-              onTapOutSide: () => controller.onTapOutside(),
-              hint: 'Enter description of your task (optional)',
-              width: size.width,
+            TitlePeriority(),
+            const SizedBox(
+              height: 20,
             ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          DateTimeRow(),
-          const SizedBox(
-            height: 20,
-          ),
-          Obx(() => AccountButton(
-                text:
-                    controller.isEditing.value ? 'Update Task' : 'Create Task',
-                loading: controller.loading.value,
-                onTap: () async {
-                  controller.showProgressPicker(context);
-                },
-              ))
-        ]),
+            const Text(
+              'Category',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Obx(
+              () => AddInputField(
+                controller: controller.category.value,
+                focus: controller.categoryFocus.value,
+                onTap: () => controller.setCategoryFocus(),
+                onTapOutSide: () => controller.onTapOutside(),
+                hint: 'Pick a Category',
+                width: size.width,
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            const Text(
+              'Description',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Obx(
+              () => AddInputField(
+                controller: controller.description.value,
+                focus: controller.descriptionFocus.value,
+                onTap: () => controller.setDescriptionFocus(),
+                onTapOutSide: () => controller.onTapOutside(),
+                hint: 'Enter description of your task (optional)',
+                width: size.width,
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            DateTimeRow(),
+            const SizedBox(
+              height: 20,
+            ),
+            Obx(() => AccountButton(
+                  text: controller.isEditing.value
+                      ? 'Update Task'
+                      : 'Create Task',
+                  loading: controller.loading.value,
+                  onTap: () async {
+                    controller.showProgressPicker(context);
+                  },
+                ))
+          ]),
+        ),
       ),
     );
   }
