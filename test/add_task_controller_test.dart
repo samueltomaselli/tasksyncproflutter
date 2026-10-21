@@ -355,6 +355,8 @@ void main() {
     await tester.pumpAndSettle();
     controller.title.value.text = 'Saved title';
 
+    await tester.ensureVisible(find.text('Update Task'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Update Task'));
     await tester.pumpAndSettle();
 
@@ -390,6 +392,8 @@ void main() {
       ),
     );
 
+    await tester.ensureVisible(find.text('Update Task'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Update Task'));
     await tester.pumpAndSettle();
 
