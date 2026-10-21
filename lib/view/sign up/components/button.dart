@@ -5,12 +5,17 @@ class AccountButton extends StatelessWidget {
   final bool loading;
   final VoidCallback onTap;
   final String? tag;
-  const AccountButton({super.key, required this.text, required this.loading, required this.onTap,this.tag});
+  const AccountButton(
+      {super.key,
+      required this.text,
+      required this.loading,
+      required this.onTap,
+      this.tag});
 
   @override
   Widget build(BuildContext context) {
     return Hero(
-      tag: tag?? "TAG",
+      tag: tag ?? "TAG",
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -31,15 +36,15 @@ class AccountButton extends StatelessWidget {
                   ),
                 )
               : Material(
-            color: Colors.transparent,
-                child: Text(
+                  color: Colors.transparent,
+                  child: Text(
                     text,
                     style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold),
                   ),
-              ),
+                ),
         ),
       ),
     );

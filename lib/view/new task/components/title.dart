@@ -15,9 +15,7 @@ class TitlePeriority extends StatelessWidget {
         const Text(
           'Title',
           style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 17),
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
         ),
         const SizedBox(
           height: 10,
@@ -38,9 +36,7 @@ class TitlePeriority extends StatelessWidget {
         const Text(
           'Priority',
           style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 17),
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
         ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
