@@ -7,7 +7,7 @@ class IconContainer extends StatelessWidget {
   const IconContainer({super.key, required this.widget});
   @override
   Widget build(BuildContext context) {
-    var size=MediaQuery.sizeOf(context);
+    var size = MediaQuery.sizeOf(context);
     return Container(
       height: 60,
       width: size.width * 0.43,
@@ -18,22 +18,17 @@ class IconContainer extends StatelessWidget {
           boxShadow: [
             BoxShadow(
                 color: Colors.white.withOpacity(.2),
-                offset: const Offset(1,0)
-            ),
+                offset: const Offset(1, 0)),
             BoxShadow(
                 color: Colors.white.withOpacity(.2),
-                offset: const Offset(0,1)
-            ),
+                offset: const Offset(0, 1)),
             BoxShadow(
                 color: Colors.white.withOpacity(.2),
-                offset: const Offset(-1,0)
-            ),
+                offset: const Offset(-1, 0)),
             BoxShadow(
                 color: Colors.white.withOpacity(.2),
-                offset: const Offset(0,-1)
-            ),
-          ]
-      ),
+                offset: const Offset(0, -1)),
+          ]),
       child: widget,
     );
   }

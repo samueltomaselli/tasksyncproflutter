@@ -32,69 +32,68 @@ class HomeController extends GetxController {
     // check for set listeners only for one time
     if (connectivity == null) {
       if (kUseFirebase) {
-      String str = FirebaseService.auth.currentUser!.email.toString();
-      String node = str.substring(0, str.indexOf('@'));
-      // listener for changing live database
-      FirebaseDatabase.instance
-          .ref('Tasks')
-          .child(node)
-          .onValue
-          .listen((event) async {
-        // check if live database has more child than local
+        String str = FirebaseService.auth.currentUser!.email.toString();
+        String node = str.substring(0, str.indexOf('@'));
+        // listener for changing live database
+        FirebaseDatabase.instance
+            .ref('Tasks')
+            .child(node)
+            .onValue
+            .listen((event) async {
+          // check if live database has more child than local
 
-        getTaskData();
-        for (var element in event.snapshot.children) {
-          if (!await db.isRowExists(
-              element.child('key').value.toString(), 'Tasks')) {
+          getTaskData();
+          for (var element in event.snapshot.children) {
+            if (!await db.isRowExists(
+                element.child('key').value.toString(), 'Tasks')) {
+              db
+                  .insert(
+                TaskModel(
+                    key: element.child('key').value.toString(),
+                    time: element.child('time').value.toString(),
+                    progress: element.child('progress').value.toString(),
+                    status: element.child('status').value.toString(),
+                    date: element.child('date').value.toString(),
+                    periority: element.child('periority').value.toString(),
+                    description: element.child('description').value.toString(),
+                    category: element.child('category').value.toString(),
+                    title: element.child('title').value.toString(),
+                    image: element.child('image').value.toString(),
+                    show: element.child('show').value.toString()),
+              )
+                  .then((value) {
+                getTaskData();
+              });
+            }
+          }
+        });
+
+        FirebaseDatabase.instance
+            .ref('Tasks')
+            .child(node)
+            .onChildChanged
+            .listen((event) async {
+          // check if live database has more child than local
+          getTaskData();
+          for (var element in event.snapshot.children) {
             db
-                .insert(
-              TaskModel(
-                  key: element.child('key').value.toString(),
-                  time: element.child('time').value.toString(),
-                  progress: element.child('progress').value.toString(),
-                  status: element.child('status').value.toString(),
-                  date: element.child('date').value.toString(),
-                  periority: element.child('periority').value.toString(),
-                  description: element.child('description').value.toString(),
-                  category: element.child('category').value.toString(),
-                  title: element.child('title').value.toString(),
-                  image: element.child('image').value.toString(),
-                  show: element.child('show').value.toString()),
-            )
+                .update(TaskModel(
+                    progress: element.child('progress').value.toString(),
+                    status: element.child('status').value.toString(),
+                    key: element.child('key').value.toString(),
+                    time: element.child('time').value.toString(),
+                    date: element.child('date').value.toString(),
+                    periority: element.child('periority').value.toString(),
+                    description: element.child('description').value.toString(),
+                    category: element.child('category').value.toString(),
+                    title: element.child('title').value.toString(),
+                    image: element.child('image').value.toString(),
+                    show: element.child('show').value.toString()))
                 .then((value) {
               getTaskData();
             });
           }
-        }
-      });
-
-      FirebaseDatabase.instance
-          .ref('Tasks')
-          .child(node)
-          .onChildChanged
-          .listen((event) async {
-
-        // check if live database has more child than local
-        getTaskData();
-        for (var element in event.snapshot.children) {
-          db
-              .update(TaskModel(
-                  progress: element.child('progress').value.toString(),
-                  status: element.child('status').value.toString(),
-                  key: element.child('key').value.toString(),
-                  time: element.child('time').value.toString(),
-                  date: element.child('date').value.toString(),
-                  periority: element.child('periority').value.toString(),
-                  description: element.child('description').value.toString(),
-                  category: element.child('category').value.toString(),
-                  title: element.child('title').value.toString(),
-                  image: element.child('image').value.toString(),
-                  show: element.child('show').value.toString()))
-              .then((value) {
-            getTaskData();
-          });
-        }
-      });
+        });
       }
       connectivity = Connectivity();
       // listener for internet state

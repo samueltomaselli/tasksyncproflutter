@@ -9,23 +9,23 @@ class SignUpOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return   Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         GestureDetector(
           onTap: () => FirebaseService.signInwWithGoogle(),
           child: IconContainer(
               widget: Icon(
-              FontAwesomeIcons.google.data,
-                size: 18,
-                color: Colors.white,
-              )),
+            FontAwesomeIcons.google.data,
+            size: 18,
+            color: Colors.white,
+          )),
         ),
         const IconContainer(
             widget: Icon(
-              Icons.apple_rounded,
-              color: Colors.white,
-            )),
+          Icons.apple_rounded,
+          color: Colors.white,
+        )),
       ],
     );
   }

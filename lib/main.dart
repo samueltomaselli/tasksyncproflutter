@@ -5,7 +5,8 @@ import 'package:get/get.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:to_do_app/data/network/firebase/firebase_mode.dart';
 import 'package:to_do_app/res/routes/app_routes.dart';
-void main()async{
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isLinux) {
     // sqflite has no native Linux implementation either; use the ffi backend.
@@ -17,6 +18,7 @@ void main()async{
   }
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -31,4 +33,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
