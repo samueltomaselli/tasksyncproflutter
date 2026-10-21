@@ -17,8 +17,7 @@ class InputField extends StatelessWidget {
       required this.onChange,
       this.hideText,
       this.showPass,
-      this.prefix
-      });
+      this.prefix});
 
   final bool focus;
   final String hint;

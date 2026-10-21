@@ -29,10 +29,12 @@ class SideMenu extends StatelessWidget {
                       fontSize: 20),
                 ),
               ),
-            ),const Divider(color: Colors.white24),
+            ),
+            const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.person, color: Colors.pinkAccent),
-              title: const Text('Profile', style: TextStyle(color: Colors.white)),
+              title:
+                  const Text('Profile', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.push(
                   context,
@@ -45,7 +47,8 @@ class SideMenu extends StatelessWidget {
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.pinkAccent),
-              title: const Text('Logout', style: TextStyle(color: Colors.white)),
+              title:
+                  const Text('Logout', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.of(context).pop();
                 Utils.showWarningDailog(

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/view/common%20widgets/back_button.dart';
+
 class SignInBar extends StatelessWidget {
   const SignInBar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return  const Row(
+    return const Row(
       children: [
         CustomBackButton(),
         SizedBox(
@@ -14,9 +15,7 @@ class SignInBar extends StatelessWidget {
         Text(
           'Sign in',
           style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-              color: Colors.white),
+              fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
         )
       ],
     );

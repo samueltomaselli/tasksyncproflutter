@@ -10,6 +10,7 @@ import 'package:to_do_app/view/home%20page/components/progress_task.dart';
 import 'package:to_do_app/view/home%20page/components/search_field.dart';
 import 'package:to_do_app/view/home%20page/components/side_menu.dart';
 import 'package:to_do_app/view/new%20task/new_task.dart';
+
 class HomePage extends StatelessWidget {
   HomePage({super.key});
   final controller = Get.put(HomeController());
@@ -41,7 +42,7 @@ class HomePage extends StatelessWidget {
           ),
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
+            child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -106,106 +107,114 @@ class HomePage extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Obx(() => controller.hasData.value? RichText(
+                child: Obx(() => controller.hasData.value
+                    ? RichText(
                         text: TextSpan(children: [
-                      const TextSpan(
-                        text: 'Progress  ',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16),
-                      ),
-                      TextSpan(
-                        text: '(${controller.taskCount}) ',
-                        style: const TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 16),
-                      ),
-                    ])): const SizedBox()),
+                        const TextSpan(
+                          text: 'Progress  ',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16),
+                        ),
+                        TextSpan(
+                          text: '(${controller.taskCount}) ',
+                          style: const TextStyle(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 16),
+                        ),
+                      ]))
+                    : const SizedBox()),
               ),
               const SizedBox(
                 height: 15,
               ),
-               ProgressTask(),
+              ProgressTask(),
               const SizedBox(
                 height: 30,
               ),
-               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Obx(() =>controller.hasData.value? const Text(
-                  'Tasks',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16),
-                ) : const SizedBox(),)
-              ),
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Obx(
+                    () => controller.hasData.value
+                        ? const Text(
+                            'Tasks',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16),
+                          )
+                        : const SizedBox(),
+                  )),
               const SizedBox(
                 height: 30,
               ),
-              Obx(()=> ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.list.length,
-                itemBuilder: (context, index){
-                  if(controller.list[index].show=='yes'){
-                     return Column(
-                      children: [
-                        Container(
-                          height: 70,
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          margin: const EdgeInsets.symmetric(horizontal: 30),
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                alignment: Alignment.center,
-                                height: 20,
-                                width: 20,
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.pinkAccent,
-                                    border: Border.all(color: Colors.white)),
-                                child: const Icon(
-                                  Icons.done,
-                                  color: Colors.white,
-                                  size: 15,
-                                ),
+              Obx(() => ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: controller.list.length,
+                    itemBuilder: (context, index) {
+                      if (controller.list[index].show == 'yes') {
+                        return Column(
+                          children: [
+                            Container(
+                              height: 70,
+                              width: double.infinity,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 30),
+                              decoration: BoxDecoration(
+                                color: primaryColor,
+                                borderRadius: BorderRadius.circular(30),
                               ),
-                              const SizedBox(
-                                width: 20,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    alignment: Alignment.center,
+                                    height: 20,
+                                    width: 20,
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.pinkAccent,
+                                        border:
+                                            Border.all(color: Colors.white)),
+                                    child: const Icon(
+                                      Icons.done,
+                                      color: Colors.white,
+                                      size: 15,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  Text(
+                                    'Create ${controller.list[index].title} for\n${controller.list[index].category}',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  const Spacer(),
+                                  const CircleAvatar(
+                                    radius: 5,
+                                    backgroundColor: Colors.purpleAccent,
+                                  )
+                                ],
                               ),
-                               Text(
-                                'Create ${controller.list[index].title} for\n${controller.list[index].category}',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700),
-                              ),
-                              const Spacer(),
-                              const CircleAvatar(
-                                radius: 5,
-                                backgroundColor: Colors.purpleAccent,
-                              )
-                            ],
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                      ],
-                    );
-                  }else{
-                    return const SizedBox();
-                  }
-                },
-              ))
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
+                    },
+                  ))
             ],
           ),
         )));

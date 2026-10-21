@@ -20,11 +20,10 @@ class ProgressTask extends StatelessWidget {
             itemBuilder: (context, index) {
               if (controller.list[index].show == 'yes') {
                 return GestureDetector(
-                  onTap: () {
-                    // controller.removeFromList(index);
-                  },
-                  child: ProgressContainer(index: index)
-                );
+                    onTap: () {
+                      // controller.removeFromList(index);
+                    },
+                    child: ProgressContainer(index: index));
               } else {
                 return const SizedBox();
               }

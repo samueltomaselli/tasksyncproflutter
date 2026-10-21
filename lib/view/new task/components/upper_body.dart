@@ -28,9 +28,7 @@ class UpperBody extends StatelessWidget {
         const Text(
           'Style',
           style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 17),
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
         ),
         const SizedBox(
           height: 10,
