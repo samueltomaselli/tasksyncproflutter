@@ -88,6 +88,7 @@ class MemoryDatabase extends Fake implements Database {
 class MemoryTransaction extends Fake implements Transaction {
   MemoryTransaction(this.database);
 
+  @override
   final MemoryDatabase database;
 
   @override

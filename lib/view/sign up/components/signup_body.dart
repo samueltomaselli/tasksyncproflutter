@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:to_do_app/res/routes/routes.dart';
 import 'package:to_do_app/view%20model/controller/signup_controller.dart';
-import 'package:to_do_app/view/sign%20in/sign_in.dart';
 import 'package:to_do_app/view/sign%20up/components/signup_options.dart';
 
 import 'appbar.dart';

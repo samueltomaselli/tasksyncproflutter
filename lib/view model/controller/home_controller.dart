@@ -40,7 +40,6 @@ class HomeController extends GetxController {
           .child(node)
           .onValue
           .listen((event) async {
-        int count = await FirebaseService.childCount();
         // check if live database has more child than local
 
         getTaskData();
@@ -74,7 +73,6 @@ class HomeController extends GetxController {
           .child(node)
           .onChildChanged
           .listen((event) async {
-        int count = await FirebaseService.childCount();
 
         // check if live database has more child than local
         getTaskData();
