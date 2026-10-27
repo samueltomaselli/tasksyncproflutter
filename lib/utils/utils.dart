@@ -13,12 +13,17 @@ class Utils {
     return error.substring(error.indexOf(']') + 1);
   }
 
-  static void showSnackBar(String title, String message, Widget icon) {
+  static void showSnackBar(
+    String title,
+    String message,
+    Widget icon, {
+    Duration duration = const Duration(milliseconds: 2000),
+  }) {
     Get.showSnackbar(GetSnackBar(
       backgroundColor: primaryColor.withOpacity(.4),
       title: title,
       isDismissible: true,
-      duration: const Duration(milliseconds: 2000),
+      duration: duration,
       icon: icon,
       message: message,
       snackPosition: SnackPosition.BOTTOM,
@@ -28,6 +33,21 @@ class Utils {
       snackStyle: SnackStyle.GROUNDED,
       barBlur: 30,
     ));
+  }
+
+  static String unsyncedTasksMessage(int count) {
+    final tasks = count == 1 ? '1 task is' : '$count tasks are';
+    return '$tasks not saved to the cloud yet. '
+        'We will try again when the connection is back.';
+  }
+
+  static void showSyncFailed(int count) {
+    showSnackBar(
+      'Not synced',
+      unsyncedTasksMessage(count),
+      const Icon(Icons.cloud_off, color: Colors.orangeAccent),
+      duration: const Duration(seconds: 4),
+    );
   }
 
   static String formateDate(DateTime date) {
