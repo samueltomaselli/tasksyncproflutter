@@ -19,6 +19,8 @@ class HomeController extends GetxController {
   RxBool focus = false.obs;
   RxBool hasText = false.obs;
   RxInt taskCount = 0.obs;
+  // Tasks saved only on this device, still waiting to be uploaded.
+  RxInt pendingCount = 0.obs;
   RxBool hasData = false.obs;
   final DbHelper db = DbHelper();
   RxList list = [].obs;
@@ -149,6 +151,7 @@ class HomeController extends GetxController {
 
   getTaskData() async {
     list.value = await db.getDataWithPending();
+    pendingCount.value = (await db.getPendingUploads()).length;
     checkData();
   }
 
@@ -213,6 +216,7 @@ class HomeController extends GetxController {
     name.value = '';
     hasData.value = false;
     taskCount.value = 0;
+    pendingCount.value = 0;
     Get.offAllNamed(Routes.signInScreen);
   }
 
