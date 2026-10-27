@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,12 +21,24 @@ class HomeController extends GetxController {
   RxBool focus = false.obs;
   RxBool hasText = false.obs;
   RxInt taskCount = 0.obs;
+  // Tasks saved only on this device, still waiting to be uploaded.
+  RxInt pendingCount = 0.obs;
   RxBool hasData = false.obs;
-  final DbHelper db = DbHelper();
+  final DbHelper db;
+  // Called with the number of tasks that could not be uploaded in a sync round.
+  final void Function(int failed) onSyncFailed;
+  // How long logout waits for pending uploads before giving up.
+  final Duration logoutSyncTimeout;
+  bool _syncingOnReconnect = false;
   RxList list = [].obs;
   Connectivity? connectivity;
   final searchController = TextEditingController().obs;
-  HomeController() {
+  HomeController({
+    DbHelper? dbHelper,
+    void Function(int failed)? syncFailedCallback,
+    this.logoutSyncTimeout = const Duration(seconds: 10),
+  })  : db = dbHelper ?? DbHelper(),
+        onSyncFailed = syncFailedCallback ?? Utils.showSyncFailed {
     // if name not loaded
     if (userData['NAME'] == null) {
       getUserData();
@@ -100,24 +114,25 @@ class HomeController extends GetxController {
       connectivity!.onConnectivityChanged.listen((event) async {
         if (event.contains(ConnectivityResult.mobile) ||
             event.contains(ConnectivityResult.wifi)) {
-          var list = await db.getPendingUploads();
-          for (int i = 0; i < list.length; i++) {
-            try {
-              await db.syncPendingUpload(list[i]);
-            } catch (_) {
-              // Keep the item pending so a later connectivity event can retry.
+          // Connectivity can flap; one round at a time, one message per round.
+          if (_syncingOnReconnect) return;
+          _syncingOnReconnect = true;
+          try {
+            final failed = await syncPendingUploads();
+            final deletes = await db.getPendingDeletes();
+            for (int i = 0; i < deletes.length; i++) {
+              try {
+                await db.syncPendingDelete(deletes[i]);
+              } catch (e) {
+                // Keep the deletion pending for a later retry.
+                debugPrint('Could not delete task ${deletes[i].key}: $e');
+              }
             }
+            await getTaskData();
+            if (failed > 0) onSyncFailed(failed);
+          } finally {
+            _syncingOnReconnect = false;
           }
-          list.clear();
-          list = await db.getPendingDeletes();
-          for (int i = 0; i < list.length; i++) {
-            try {
-              await db.syncPendingDelete(list[i]);
-            } catch (_) {
-              // Keep the deletion pending for a later retry.
-            }
-          }
-          getTaskData();
         }
       });
     }
@@ -147,8 +162,49 @@ class HomeController extends GetxController {
     }
   }
 
+  /// Tries to upload every task in PendingUploads and returns how many could
+  /// not be uploaded. Those stay pending so a later round can retry them.
+  Future<int> syncPendingUploads() async {
+    var failed = 0;
+    for (final task in await db.getPendingUploads()) {
+      try {
+        await db.syncPendingUpload(task);
+      } catch (e) {
+        failed++;
+        debugPrint('Could not upload task ${task.key}: $e');
+      }
+    }
+    return failed;
+  }
+
+  Future<int> countPendingUploads() async {
+    return (await db.getPendingUploads()).length;
+  }
+
+  Future<bool> isOnline() async {
+    final connection = await Connectivity().checkConnectivity();
+    return connection.contains(ConnectivityResult.wifi) ||
+        connection.contains(ConnectivityResult.mobile) ||
+        connection.contains(ConnectivityResult.ethernet);
+  }
+
+  /// Tries to upload every pending task before the session is cleared and
+  /// returns how many are still pending. Firebase writes wait for the server
+  /// instead of failing on a bad connection, so this gives up after
+  /// [logoutSyncTimeout] and counts whatever did not finish as still pending.
+  Future<int> syncBeforeLogout() async {
+    try {
+      await syncPendingUploads().timeout(logoutSyncTimeout);
+    } on TimeoutException {
+      debugPrint('Gave up uploading pending tasks after $logoutSyncTimeout');
+    }
+    await getTaskData();
+    return pendingCount.value;
+  }
+
   getTaskData() async {
     list.value = await db.getDataWithPending();
+    pendingCount.value = (await db.getPendingUploads()).length;
     checkData();
   }
 
@@ -213,6 +269,7 @@ class HomeController extends GetxController {
     name.value = '';
     hasData.value = false;
     taskCount.value = 0;
+    pendingCount.value = 0;
     Get.offAllNamed(Routes.signInScreen);
   }
 

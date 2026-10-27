@@ -6,6 +6,7 @@ import 'package:to_do_app/res/assets/app_icons.dart';
 import 'package:to_do_app/utils/utils.dart';
 import 'package:to_do_app/view%20model/controller/home_controller.dart';
 import 'package:to_do_app/view/common%20widgets/back_button.dart';
+import 'package:to_do_app/view/home%20page/components/pending_sync_banner.dart';
 import 'package:to_do_app/view/home%20page/components/progress_task.dart';
 import 'package:to_do_app/view/home%20page/components/search_field.dart';
 import 'package:to_do_app/view/home%20page/components/side_menu.dart';
@@ -105,6 +106,8 @@ class HomePage extends StatelessWidget {
               const SizedBox(
                 height: 30,
               ),
+              Obx(() =>
+                  PendingSyncBanner(count: controller.pendingCount.value)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Obx(() => controller.hasData.value
