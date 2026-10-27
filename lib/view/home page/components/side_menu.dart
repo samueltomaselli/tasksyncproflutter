@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:to_do_app/utils/utils.dart';
 import 'package:to_do_app/view%20model/controller/home_controller.dart';
 
 import '../../../res/app_color.dart';
 import '../../profile page/profile_page.dart';
+import 'logout_flow.dart';
 
 class SideMenu extends StatelessWidget {
   SideMenu({super.key});
@@ -51,13 +51,7 @@ class SideMenu extends StatelessWidget {
                   const Text('Logout', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.of(context).pop();
-                Utils.showWarningDailog(
-                  Get.context!,
-                  () => controller.logout(),
-                  title: 'Logout',
-                  message: 'Are you sure you want to logout?',
-                  confirmLabel: 'Logout',
-                );
+                confirmAndLogout(Get.context!, controller);
               },
             ),
           ],

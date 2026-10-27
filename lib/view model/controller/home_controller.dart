@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -25,6 +27,8 @@ class HomeController extends GetxController {
   final DbHelper db;
   // Called with the number of tasks that could not be uploaded in a sync round.
   final void Function(int failed) onSyncFailed;
+  // How long logout waits for pending uploads before giving up.
+  final Duration logoutSyncTimeout;
   bool _syncingOnReconnect = false;
   RxList list = [].obs;
   Connectivity? connectivity;
@@ -32,6 +36,7 @@ class HomeController extends GetxController {
   HomeController({
     DbHelper? dbHelper,
     void Function(int failed)? syncFailedCallback,
+    this.logoutSyncTimeout = const Duration(seconds: 10),
   })  : db = dbHelper ?? DbHelper(),
         onSyncFailed = syncFailedCallback ?? Utils.showSyncFailed {
     // if name not loaded
@@ -170,6 +175,31 @@ class HomeController extends GetxController {
       }
     }
     return failed;
+  }
+
+  Future<int> countPendingUploads() async {
+    return (await db.getPendingUploads()).length;
+  }
+
+  Future<bool> isOnline() async {
+    final connection = await Connectivity().checkConnectivity();
+    return connection.contains(ConnectivityResult.wifi) ||
+        connection.contains(ConnectivityResult.mobile) ||
+        connection.contains(ConnectivityResult.ethernet);
+  }
+
+  /// Tries to upload every pending task before the session is cleared and
+  /// returns how many are still pending. Firebase writes wait for the server
+  /// instead of failing on a bad connection, so this gives up after
+  /// [logoutSyncTimeout] and counts whatever did not finish as still pending.
+  Future<int> syncBeforeLogout() async {
+    try {
+      await syncPendingUploads().timeout(logoutSyncTimeout);
+    } on TimeoutException {
+      debugPrint('Gave up uploading pending tasks after $logoutSyncTimeout');
+    }
+    await getTaskData();
+    return pendingCount.value;
   }
 
   getTaskData() async {
