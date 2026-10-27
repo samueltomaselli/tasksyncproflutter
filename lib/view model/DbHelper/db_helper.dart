@@ -240,7 +240,11 @@ class DbHelper {
       where: 'key = ?',
       whereArgs: [key],
     );
-    if (pendingRows.isEmpty || !mapEquals(pendingRows.single, model.toMap())) {
+    // Compare through TaskModel: the table has a stray `TEXT` column (from the
+    // `status,TEXT` typo in onCreate), so the raw row never equals model.toMap().
+    if (pendingRows.isEmpty ||
+        !mapEquals(
+            TaskModel.fromMap(pendingRows.single).toMap(), model.toMap())) {
       return;
     }
 
