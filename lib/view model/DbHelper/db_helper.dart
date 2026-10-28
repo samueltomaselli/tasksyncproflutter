@@ -19,6 +19,7 @@ class DbHelper {
     ConnectivityChecker? checkConnectivity,
     RemoteTaskUpdate? updateRemoteTask,
     RemoteTaskDelete? deleteRemoteTask,
+    this.uploadTimeout = const Duration(seconds: 5),
   })  : _db = database,
         _checkConnectivity =
             checkConnectivity ?? (() => Connectivity().checkConnectivity()),
@@ -30,6 +31,10 @@ class DbHelper {
   final ConnectivityChecker _checkConnectivity;
   final RemoteTaskUpdate _updateRemoteTask;
   final RemoteTaskDelete _deleteRemoteTask;
+
+  /// How long creating a task waits for the server. Firebase does not fail
+  /// on a network without internet, it waits, so the wait must be bounded.
+  final Duration uploadTimeout;
   static final Map<String, Future<void>> _keyOperations = {};
 
   Future<T> _withKeyLock<T>(String key, Future<T> Function() operation) async {
@@ -74,25 +79,65 @@ class DbHelper {
     return _db;
   }
 
+  /// Single source of truth for "is there a network?" used by every write.
+  /// It only tells that a network is connected, not that internet works,
+  /// which is why writes are queued first and dequeued after the upload.
+  Future<bool> isOnline() async {
+    final connection = await _checkConnectivity();
+    return connection.contains(ConnectivityResult.wifi) ||
+        connection.contains(ConnectivityResult.mobile) ||
+        connection.contains(ConnectivityResult.ethernet);
+  }
+
   Future<TaskModel> insert(TaskModel model) async {
-    var dbClient = await db;
-    final Connectivity connectivity = Connectivity();
-    var connection = await connectivity.checkConnectivity();
-    if (connection.contains(ConnectivityResult.wifi) ||
-        connection.contains(ConnectivityResult.mobile)) {
-      dbClient!.insert('Tasks', model.toMap()).then(
-        (value) {
-          FirebaseService.insertData(model);
-        },
-      ).onError(
-        (error, stackTrace) {},
-      );
-
-      return model;
-    }
-    dbClient!.insert('PendingUploads', model.toMap()).then((value) {});
-
+    await _withKeyLock(model.key!, () => _insert(model));
     return model;
+  }
+
+  Future<void> _insert(TaskModel model) async {
+    final dbClient = await db;
+    // A local failure must reach the caller, so the form can show it.
+    await dbClient!.insert(
+      'PendingUploads',
+      model.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    if (!await isOnline()) return;
+
+    try {
+      await _syncPendingUpload(model).timeout(uploadTimeout);
+    } catch (_) {
+      // The task stays in PendingUploads and syncPending() retries it.
+    }
+  }
+
+  /// Stores a task that came from the server without uploading it again.
+  Future<void> saveRemoteTask(TaskModel model) async {
+    final dbClient = await db;
+    await dbClient!.insert(
+      'Tasks',
+      model.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Retries every queued upload and deletion. Items that fail stay queued.
+  Future<void> syncPending() async {
+    if (!await isOnline()) return;
+    for (final task in await getPendingUploads()) {
+      try {
+        await syncPendingUpload(task);
+      } catch (_) {
+        // Keep the item pending for the next retry.
+      }
+    }
+    for (final task in await getPendingDeletes()) {
+      try {
+        await syncPendingDelete(task);
+      } catch (_) {
+        // Keep the deletion pending for the next retry.
+      }
+    }
   }
 
   Future<void> removeFromList(TaskModel model) async {
@@ -144,11 +189,7 @@ class DbHelper {
     });
     if (!needsRemoteDelete) return;
 
-    final connection = await _checkConnectivity();
-    final isOnline = connection.contains(ConnectivityResult.wifi) ||
-        connection.contains(ConnectivityResult.mobile) ||
-        connection.contains(ConnectivityResult.ethernet);
-    if (isOnline) {
+    if (await isOnline()) {
       try {
         await _deleteRemoteTask(model);
         await dbClient.delete(
@@ -212,11 +253,7 @@ class DbHelper {
       }
     });
 
-    final connection = await _checkConnectivity();
-    final isOnline = connection.contains(ConnectivityResult.wifi) ||
-        connection.contains(ConnectivityResult.mobile) ||
-        connection.contains(ConnectivityResult.ethernet);
-    if (!isOnline) return;
+    if (!await isOnline()) return;
 
     try {
       await _syncPendingUpload(model);

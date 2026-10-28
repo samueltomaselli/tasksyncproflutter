@@ -47,7 +47,7 @@ class HomeController extends GetxController {
             if (!await db.isRowExists(
                 element.child('key').value.toString(), 'Tasks')) {
               db
-                  .insert(
+                  .saveRemoteTask(
                 TaskModel(
                     key: element.child('key').value.toString(),
                     time: element.child('time').value.toString(),
@@ -97,31 +97,15 @@ class HomeController extends GetxController {
       }
       connectivity = Connectivity();
       // listener for internet state
-      connectivity!.onConnectivityChanged.listen((event) async {
-        if (event.contains(ConnectivityResult.mobile) ||
-            event.contains(ConnectivityResult.wifi)) {
-          var list = await db.getPendingUploads();
-          for (int i = 0; i < list.length; i++) {
-            try {
-              await db.syncPendingUpload(list[i]);
-            } catch (_) {
-              // Keep the item pending so a later connectivity event can retry.
-            }
-          }
-          list.clear();
-          list = await db.getPendingDeletes();
-          for (int i = 0; i < list.length; i++) {
-            try {
-              await db.syncPendingDelete(list[i]);
-            } catch (_) {
-              // Keep the deletion pending for a later retry.
-            }
-          }
-          getTaskData();
-        }
+      connectivity!.onConnectivityChanged.listen((_) async {
+        await db.syncPending();
+        getTaskData();
       });
     }
     getTaskData();
+    // Retry what an earlier session could not upload, e.g. on a Wi-Fi
+    // without internet, where no connectivity change event fires.
+    db.syncPending().then((_) => getTaskData());
   }
   checkData() {
     int count = 0;

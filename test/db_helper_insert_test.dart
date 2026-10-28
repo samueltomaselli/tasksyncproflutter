@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:to_do_app/model/task_model.dart';
@@ -130,6 +132,39 @@ void main() {
     );
 
     await expectLater(helper.insert(newTask()), throwsA(isA<StateError>()));
+    expect(remoteCalls, 0);
+  });
+
+  test('an upload that never answers does not block task creation', () async {
+    final database = MemoryDatabase();
+    final neverAnswers = Completer<void>();
+    final helper = DbHelper(
+      database: database,
+      checkConnectivity: () async => [ConnectivityResult.wifi],
+      updateRemoteTask: (_) => neverAnswers.future,
+      uploadTimeout: const Duration(milliseconds: 10),
+    );
+
+    await helper.insert(newTask());
+
+    expect(database.tables['PendingUploads']!.keys, ['new-task']);
+    expect(database.tables['Tasks'], isEmpty);
+  });
+
+  test('a task received from the server is cached without uploading again',
+      () async {
+    final database = MemoryDatabase();
+    var remoteCalls = 0;
+    final helper = DbHelper(
+      database: database,
+      checkConnectivity: () async => [ConnectivityResult.wifi],
+      updateRemoteTask: (_) async => remoteCalls++,
+    );
+
+    await helper.saveRemoteTask(newTask());
+
+    expect(database.tables['Tasks']!.keys, ['new-task']);
+    expect(database.tables['PendingUploads'], isEmpty);
     expect(remoteCalls, 0);
   });
 }
