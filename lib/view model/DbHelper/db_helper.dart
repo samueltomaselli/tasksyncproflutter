@@ -83,6 +83,8 @@ class DbHelper {
     'PendingDeletes',
   ];
 
+  /// The columns of every task table, all TEXT. The first one is the key.
+  /// A new column only needs to be added here.
   static const List<String> _taskColumns = [
     'key',
     'title',
@@ -97,10 +99,13 @@ class DbHelper {
     'status',
   ];
 
-  static String _createTableSql(String table) =>
-      'CREATE TABLE $table(key TEXT PRIMARY KEY,title TEXT,category TEXT,'
-      'description TEXT,image TEXT,date TEXT,time TEXT,periority TEXT,'
-      'show TEXT,progress TEXT,status TEXT)';
+  static String _createTableSql(String table) {
+    final columns = [
+      '${_taskColumns.first} TEXT PRIMARY KEY',
+      for (final column in _taskColumns.skip(1)) '$column TEXT',
+    ];
+    return 'CREATE TABLE $table(${columns.join(',')})';
+  }
 
   static Future<void> createSchema(Database db, int version) async {
     for (final table in taskTables) {
