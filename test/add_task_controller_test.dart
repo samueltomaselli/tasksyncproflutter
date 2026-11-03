@@ -32,6 +32,13 @@ class FakeDbHelper extends DbHelper {
   }
 }
 
+class FailingInsertDbHelper extends FakeDbHelper {
+  @override
+  Future<TaskModel> insert(TaskModel model) async {
+    throw StateError('local write failed');
+  }
+}
+
 class BlockingDbHelper extends FakeDbHelper {
   final updateCompleter = Completer<void>();
   int updateCalls = 0;
@@ -371,6 +378,53 @@ void main() {
     expect(database.syncedUpdates.single.title, 'Saved title');
     expect(find.text('Update Task'), findsNothing);
     expect(controller.isEditing.value, isFalse);
+  });
+
+  testWidgets('a failed local save shows an error and keeps the dialog open',
+      (tester) async {
+    final controller = AddTaskController(
+      database: FailingInsertDbHelper(),
+      onRefresh: () async {},
+    );
+    Get.put<AddTaskController>(controller);
+    tester.view.physicalSize = const Size(412, 915);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      GetMaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () => NewTask(MediaQuery.sizeOf(context)),
+              child: const Text('Open editor'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open editor'));
+    await tester.pumpAndSettle();
+    controller.title.value.text = 'New task';
+    controller.category.value.text = 'Work';
+    controller.date.value = DateFormat('d MMM y').format(
+      DateTime.now().add(const Duration(days: 1)),
+    );
+
+    await tester.ensureVisible(find.text('Create Task'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create Task'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Create'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('Set Progress'), findsOneWidget);
+    expect(find.text('Create Task'), findsOneWidget);
+    expect(find.textContaining('local write failed'), findsOneWidget);
+
+    await tester.pumpAndSettle(const Duration(seconds: 3));
   });
 
   testWidgets('an overdue task can be edited without changing its date',

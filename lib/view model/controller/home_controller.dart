@@ -61,7 +61,7 @@ class HomeController extends GetxController {
             if (!await db.isRowExists(
                 element.child('key').value.toString(), 'Tasks')) {
               db
-                  .insert(
+                  .saveRemoteTask(
                 TaskModel(
                     key: element.child('key').value.toString(),
                     time: element.child('time').value.toString(),
@@ -113,30 +113,18 @@ class HomeController extends GetxController {
       // listener for internet state
       connectivity!.onConnectivityChanged.listen((event) async {
         if (event.contains(ConnectivityResult.mobile) ||
-            event.contains(ConnectivityResult.wifi)) {
-          // Connectivity can flap; one round at a time, one message per round.
-          if (_syncingOnReconnect) return;
-          _syncingOnReconnect = true;
-          try {
-            final failed = await syncPendingUploads();
-            final deletes = await db.getPendingDeletes();
-            for (int i = 0; i < deletes.length; i++) {
-              try {
-                await db.syncPendingDelete(deletes[i]);
-              } catch (e) {
-                // Keep the deletion pending for a later retry.
-                debugPrint('Could not delete task ${deletes[i].key}: $e');
-              }
-            }
-            await getTaskData();
-            if (failed > 0) onSyncFailed(failed);
-          } finally {
-            _syncingOnReconnect = false;
-          }
+            event.contains(ConnectivityResult.wifi) ||
+            event.contains(ConnectivityResult.ethernet)) {
+          await _syncAndReport();
         }
       });
     }
     getTaskData();
+    // Retry what an earlier session could not upload, e.g. on a Wi-Fi
+    // without internet, where no connectivity change event fires.
+    db.isOnline().then((online) {
+      if (online) _syncAndReport();
+    });
   }
   checkData() {
     int count = 0;
@@ -162,13 +150,37 @@ class HomeController extends GetxController {
     }
   }
 
+  /// Uploads and deletes what is pending and tells the user what failed.
+  Future<void> _syncAndReport() async {
+    // Connectivity can flap; one round at a time, one message per round.
+    if (_syncingOnReconnect) return;
+    _syncingOnReconnect = true;
+    try {
+      final failed = await syncPendingUploads();
+      final deletes = await db.getPendingDeletes();
+      for (int i = 0; i < deletes.length; i++) {
+        try {
+          await db.syncPendingDelete(deletes[i]);
+        } catch (e) {
+          // Keep the deletion pending for a later retry.
+          debugPrint('Could not delete task ${deletes[i].key}: $e');
+        }
+      }
+      await getTaskData();
+      if (failed > 0) onSyncFailed(failed);
+    } finally {
+      _syncingOnReconnect = false;
+    }
+  }
+
   /// Tries to upload every task in PendingUploads and returns how many could
   /// not be uploaded. Those stay pending so a later round can retry them.
   Future<int> syncPendingUploads() async {
     var failed = 0;
     for (final task in await db.getPendingUploads()) {
       try {
-        await db.syncPendingUpload(task);
+        // Firebase waits instead of failing on a network without internet.
+        await db.syncPendingUpload(task).timeout(db.uploadTimeout);
       } catch (e) {
         failed++;
         debugPrint('Could not upload task ${task.key}: $e');
@@ -181,12 +193,7 @@ class HomeController extends GetxController {
     return (await db.getPendingUploads()).length;
   }
 
-  Future<bool> isOnline() async {
-    final connection = await Connectivity().checkConnectivity();
-    return connection.contains(ConnectivityResult.wifi) ||
-        connection.contains(ConnectivityResult.mobile) ||
-        connection.contains(ConnectivityResult.ethernet);
-  }
+  Future<bool> isOnline() => db.isOnline();
 
   /// Tries to upload every pending task before the session is cleared and
   /// returns how many are still pending. Firebase writes wait for the server
