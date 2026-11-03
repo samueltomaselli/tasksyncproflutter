@@ -13,12 +13,17 @@ class Utils {
     return error.substring(error.indexOf(']') + 1);
   }
 
-  static void showSnackBar(String title, String message, Widget icon) {
+  static void showSnackBar(
+    String title,
+    String message,
+    Widget icon, {
+    Duration duration = const Duration(milliseconds: 2000),
+  }) {
     Get.showSnackbar(GetSnackBar(
       backgroundColor: primaryColor.withOpacity(.4),
       title: title,
       isDismissible: true,
-      duration: const Duration(milliseconds: 2000),
+      duration: duration,
       icon: icon,
       message: message,
       snackPosition: SnackPosition.BOTTOM,
@@ -28,6 +33,21 @@ class Utils {
       snackStyle: SnackStyle.GROUNDED,
       barBlur: 30,
     ));
+  }
+
+  static String unsyncedTasksMessage(int count) {
+    final tasks = count == 1 ? '1 task is' : '$count tasks are';
+    return '$tasks not saved to the cloud yet. '
+        'We will try again when the connection is back.';
+  }
+
+  static void showSyncFailed(int count) {
+    showSnackBar(
+      'Not synced',
+      unsyncedTasksMessage(count),
+      const Icon(Icons.cloud_off, color: Colors.orangeAccent),
+      duration: const Duration(seconds: 4),
+    );
   }
 
   static String formateDate(DateTime date) {
@@ -87,5 +107,74 @@ class Utils {
         );
       },
     );
+  }
+
+  /// Asks the user to confirm. Resolves to true only when they pick the
+  /// confirm button; dismissing the dialog or cancelling resolves to false.
+  static Future<bool> showConfirmDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required String confirmLabel,
+    String cancelLabel = 'Cancel',
+    bool destructive = false,
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: Text(cancelLabel),
+              onPressed: () => Navigator.pop(context, false),
+            ),
+            TextButton(
+              style: destructive
+                  ? TextButton.styleFrom(foregroundColor: Colors.redAccent)
+                  : null,
+              child: Text(confirmLabel),
+              onPressed: () => Navigator.pop(context, true),
+            ),
+          ],
+        );
+      },
+    );
+    return confirmed ?? false;
+  }
+
+  /// Shows a blocking progress dialog while [task] runs, then closes it.
+  static Future<T> runWithProgressDialog<T>(
+    BuildContext context,
+    String message,
+    Future<T> Function() task,
+  ) async {
+    // Not awaited: the dialog future only completes when it is popped.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            children: [
+              const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+              const SizedBox(width: 20),
+              Expanded(child: Text(message)),
+            ],
+          ),
+        ),
+      ),
+    );
+    try {
+      return await task();
+    } finally {
+      if (context.mounted) Navigator.of(context).pop();
+    }
   }
 }
