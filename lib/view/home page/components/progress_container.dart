@@ -113,7 +113,14 @@ class ProgressContainer extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 6,
+                ),
+                Text(
+                  'Prioridade: ${controller.list[index].priorityLabel}',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12),
                 ),
                 Text(
                   controller.list[index].title,

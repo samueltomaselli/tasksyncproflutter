@@ -44,7 +44,7 @@ TaskModel _task(String key) => TaskModel(
       category: 'Work',
       description: 'Created offline',
       image: 'assets/images/back1.jpg',
-      periority: 'High',
+      priority: Priority.high,
       time: '09:00 AM',
       date: '10 Sep 2026',
       show: 'yes',
