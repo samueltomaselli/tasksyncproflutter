@@ -135,7 +135,7 @@ Os PRs da história, da pendência da N1 e dos smells foram revisados por um col
 - [PR #15](https://github.com/samueltomaselli/tasksyncproflutter/pull/15) — Migração do banco para a v2 com colunas tipadas (BUG01 e Smell 1)
 - [PR #16](https://github.com/samueltomaselli/tasksyncproflutter/pull/16) — `TaskModel.fromFirebase` e tabelas geradas da lista de colunas (Smell 3 e Smell 1)
 
-Também entraram, sem comentário de revisão registrado:
+Também entraram, sem comentário de revisão registrado, por serem tarefas de configuração do ambiente (CI e execução dos testes):
 
 - [PR #9](https://github.com/samueltomaselli/tasksyncproflutter/pull/9) — Pipeline de CI no GitHub Actions (CI01)
 - [PR #12](https://github.com/samueltomaselli/tasksyncproflutter/pull/12) — Testes rodando sem Firebase em qualquer sistema (BUG02)
@@ -165,7 +165,7 @@ A suíte tem 80 testes e roda sem Firebase, então funciona em Linux, macOS e Wi
 
 ### Vídeo de demonstração
 
-[Vídeo do Sprint 2: tarefa criada offline, aviso de pendência, sincronização e testes passando](LINK_DO_VIDEO)
+[Vídeo do Sprint 2: tarefa criada offline, aviso de pendência, sincronização e testes passando](https://drive.google.com/file/d/13D5coNJibfO-V3xcfeq_H6iCaEQfiVbD/view?usp=sharing)
 
 ### Diário de bordo
 
