@@ -66,17 +66,69 @@ class DbHelper {
     String path = join(directory!.path, 'db');
     _db = await openDatabase(
       path,
-      version: 1,
-      onCreate: (db, version) {
-        db.execute(
-            "CREATE TABLE Tasks(key TEXT PRIMARY KEY,title TEXT,category TEXT,description TEXT,image TEXT,date TEXT,time,periority TEXT,show TEXT,progress TEXT,status,TEXT)");
-        db.execute(
-            "CREATE TABLE PendingUploads(key TEXT PRIMARY KEY,title TEXT,category TEXT,description TEXT,image TEXT,date TEXT,time,periority TEXT,show TEXT,progress TEXT,status,TEXT)");
-        db.execute(
-            "CREATE TABLE PendingDeletes(key TEXT PRIMARY KEY,title TEXT,category TEXT,description TEXT,image TEXT,date TEXT,time,periority TEXT,show TEXT,progress TEXT,status,TEXT)");
-      },
+      version: schemaVersion,
+      onCreate: createSchema,
+      onUpgrade: upgradeSchema,
     );
     return _db;
+  }
+
+  /// Version 2 gives `time` and `status` the TEXT type and removes the
+  /// column literally named `TEXT` that version 1 created by mistake.
+  static const int schemaVersion = 2;
+
+  static const List<String> taskTables = [
+    'Tasks',
+    'PendingUploads',
+    'PendingDeletes',
+  ];
+
+  static const List<String> _taskColumns = [
+    'key',
+    'title',
+    'category',
+    'description',
+    'image',
+    'date',
+    'time',
+    'periority',
+    'show',
+    'progress',
+    'status',
+  ];
+
+  static String _createTableSql(String table) =>
+      'CREATE TABLE $table(key TEXT PRIMARY KEY,title TEXT,category TEXT,'
+      'description TEXT,image TEXT,date TEXT,time TEXT,periority TEXT,'
+      'show TEXT,progress TEXT,status TEXT)';
+
+  static Future<void> createSchema(Database db, int version) async {
+    for (final table in taskTables) {
+      await db.execute(_createTableSql(table));
+    }
+  }
+
+  static Future<void> upgradeSchema(
+      Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await _migrateToVersion2(db);
+    }
+  }
+
+  /// SQLite cannot change a column type, so each table is rebuilt and its
+  /// rows copied over. It runs in one transaction: either every table is
+  /// migrated or nothing changes and the saved tasks stay where they were.
+  static Future<void> _migrateToVersion2(Database db) async {
+    final columns = _taskColumns.join(',');
+    await db.transaction((txn) async {
+      for (final table in taskTables) {
+        await txn.execute('ALTER TABLE $table RENAME TO ${table}_v1');
+        await txn.execute(_createTableSql(table));
+        await txn.execute(
+            'INSERT INTO $table($columns) SELECT $columns FROM ${table}_v1');
+        await txn.execute('DROP TABLE ${table}_v1');
+      }
+    });
   }
 
   /// Single source of truth for "is there a network?" used by every write.
