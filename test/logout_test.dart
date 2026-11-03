@@ -59,7 +59,7 @@ TaskModel _sampleTask() => TaskModel(
       category: 'Work',
       description: 'Sample description',
       image: 'assets/images/back1.jpg',
-      periority: 'High',
+      priority: Priority.high,
       time: '09:00 AM',
       date: '10 Sep 2026',
       show: 'yes',

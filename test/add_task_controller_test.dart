@@ -57,7 +57,7 @@ TaskModel existingTask() => TaskModel(
       category: 'Work',
       description: 'Current description',
       image: 'assets/images/back3.jpg',
-      periority: 'High',
+      priority: Priority.high,
       time: '09:30 AM',
       date: '10 Sep 2026',
       show: 'yes',
@@ -92,7 +92,7 @@ void main() {
     expect(controller.category.value.text, 'Work');
     expect(controller.description.value.text, 'Current description');
     expect(controller.selectedImageIndex.value, 2);
-    expect(controller.periority.value, 'High');
+    expect(controller.priority.value, Priority.high);
     expect(controller.time.value, '09:30 AM');
     expect(controller.date.value, '10 Sep 2026');
     expect(controller.progress.value, 35);
@@ -110,7 +110,7 @@ void main() {
     controller.category.value.text = 'Personal';
     controller.description.value.text = 'Updated description';
     controller.selectedImageIndex.value = 3;
-    controller.periority.value = 'Low';
+    controller.priority.value = Priority.low;
     controller.time.value = '07:45 PM';
     controller.date.value = '12 Sep 2026';
     controller.progress.value = 80;
@@ -143,13 +143,13 @@ void main() {
       onRefresh: () async {},
     );
 
-    expect(controller.periority.value, 'High');
+    expect(controller.priority.value, Priority.high);
 
-    controller.setPeriority('Medium');
-    expect(controller.periority.value, 'Medium');
+    controller.setPriority(Priority.medium);
+    expect(controller.priority.value, Priority.medium);
 
-    controller.setPeriority('Low');
-    expect(controller.periority.value, 'Low');
+    controller.setPriority(Priority.low);
+    expect(controller.priority.value, Priority.low);
   });
 
   test('editing a task and saving it with Medium priority persists Medium',
@@ -160,13 +160,13 @@ void main() {
       onRefresh: () async {},
     );
     controller.startEditing(existingTask());
-    expect(controller.periority.value, 'High');
+    expect(controller.priority.value, Priority.high);
 
-    controller.setPeriority('Medium');
+    controller.setPriority(Priority.medium);
     final saved = await controller.saveTask();
 
     expect(saved, isTrue);
-    expect(database.syncedUpdates.single.periority, 'Medium');
+    expect(database.syncedUpdates.single.toMap()['periority'], 'Medium');
   });
 
   test('editing and saving an invalid priority uses High', () async {
@@ -177,10 +177,13 @@ void main() {
     );
 
     for (final value in [null, '', 'null', 'Unknown']) {
-      controller.startEditing(existingTask()..periority = value);
-      expect(controller.periority.value, 'High');
+      controller.startEditing(TaskModel.fromMap({
+        ...existingTask().toMap(),
+        'periority': value,
+      }));
+      expect(controller.priority.value, Priority.high);
       expect(await controller.saveTask(), isTrue);
-      expect(database.syncedUpdates.last.periority, 'High');
+      expect(database.syncedUpdates.last.toMap()['periority'], 'High');
     }
   });
 
@@ -270,7 +273,7 @@ void main() {
 
     await tester.tap(find.text('Medium'));
     await tester.pump();
-    expect(controller.periority.value, 'Medium');
+    expect(controller.priority.value, Priority.medium);
     expect(tester.takeException(), isNull);
   });
 
@@ -300,6 +303,37 @@ void main() {
       find.widgetWithText(TextFormField, 'Current description'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('selecting Medium for a legacy task saves the stored value',
+      (tester) async {
+    final database = FakeDbHelper();
+    final controller = AddTaskController(
+      database: database,
+      onRefresh: () async {},
+    );
+    final legacyTask = TaskModel.fromMap({
+      ...existingTask().toMap(),
+      'periority': 'null',
+    });
+    controller.startEditing(legacyTask);
+    Get.put<AddTaskController>(controller);
+    tester.view.physicalSize = const Size(412, 915);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      GetMaterialApp(
+        home: Scaffold(body: TaskBody(controller: controller)),
+      ),
+    );
+
+    await tester.tap(find.text('Medium'));
+    await tester.pump();
+
+    expect(await controller.saveTask(), isTrue);
+    expect(database.syncedUpdates.single.toMap()['periority'], 'Medium');
   });
 
   testWidgets('dismissing the edit sheet discards the unsaved draft',

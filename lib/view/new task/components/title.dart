@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:to_do_app/model/task_model.dart';
 import 'package:to_do_app/view%20model/controller/add_task_controller.dart';
 import 'package:to_do_app/view/new%20task/components/periority_container.dart';
 import 'add_fild.dart';
@@ -44,27 +45,27 @@ class TitlePeriority extends StatelessWidget {
             Expanded(
               child: Obx(
                 () => PeriorityContainer(
-                    onTap: () => controller.setPeriority('High'),
-                    focus: controller.periority.value == 'High',
-                    type: "High"),
+                    onTap: () => controller.setPriority(Priority.high),
+                    focus: controller.priority.value == Priority.high,
+                    type: Priority.high.storedValue),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Obx(
                 () => PeriorityContainer(
-                    onTap: () => controller.setPeriority('Medium'),
-                    focus: controller.periority.value == 'Medium',
-                    type: "Medium"),
+                    onTap: () => controller.setPriority(Priority.medium),
+                    focus: controller.priority.value == Priority.medium,
+                    type: Priority.medium.storedValue),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Obx(
                 () => PeriorityContainer(
-                    onTap: () => controller.setPeriority('Low'),
-                    focus: controller.periority.value == 'Low',
-                    type: "Low"),
+                    onTap: () => controller.setPriority(Priority.low),
+                    focus: controller.priority.value == Priority.low,
+                    type: Priority.low.storedValue),
               ),
             ),
           ],

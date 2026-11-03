@@ -13,7 +13,7 @@ TaskModel newTask() => TaskModel(
       category: 'Work',
       description: 'Description',
       image: 'assets/images/back2.jpg',
-      periority: 'Medium',
+      priority: Priority.medium,
       time: '09:30 AM',
       date: '10 Sep 2030',
       show: 'yes',

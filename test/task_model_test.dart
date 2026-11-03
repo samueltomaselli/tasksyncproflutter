@@ -7,7 +7,7 @@ TaskModel taskWithProgress(String progress) => TaskModel(
       category: 'Work',
       description: '',
       image: 'assets/images/back2.jpg',
-      periority: 'Low',
+      priority: Priority.low,
       time: '',
       date: '10 Sep 2030',
       show: 'yes',
