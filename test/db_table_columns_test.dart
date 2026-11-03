@@ -67,8 +67,7 @@ void main() {
     }
   });
 
-  test('a task inserted in each table is read back with every field',
-      () async {
+  test('a task inserted in each table is read back with every field', () async {
     for (final table in DbHelper.taskTables) {
       final task = sampleTask('task-$table');
       await db.insert(table, task.toMap());
