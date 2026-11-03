@@ -67,6 +67,21 @@ class TaskModel {
     status = res['status'];
   }
 
+  /// Builds a task from what the Realtime Database returns for one task.
+  /// Every field becomes text, so a missing field becomes "null".
+  TaskModel.fromFirebase(Map data)
+      : key = '${data['key']}',
+        title = '${data['title']}',
+        category = '${data['category']}',
+        description = '${data['description']}',
+        image = '${data['image']}',
+        priority = Priority.fromStorage(data['periority']),
+        time = '${data['time']}',
+        date = '${data['date']}',
+        show = '${data['show']}',
+        progress = '${data['progress']}',
+        status = '${data['status']}';
+
   Map<String, Object?> toMap() {
     return {
       'key': key,

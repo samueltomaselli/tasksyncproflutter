@@ -61,21 +61,7 @@ class HomeController extends GetxController {
             if (!await db.isRowExists(
                 element.child('key').value.toString(), 'Tasks')) {
               db
-                  .saveRemoteTask(
-                TaskModel(
-                    key: element.child('key').value.toString(),
-                    time: element.child('time').value.toString(),
-                    progress: element.child('progress').value.toString(),
-                    status: element.child('status').value.toString(),
-                    date: element.child('date').value.toString(),
-                    priority:
-                        Priority.fromStorage(element.child('periority').value),
-                    description: element.child('description').value.toString(),
-                    category: element.child('category').value.toString(),
-                    title: element.child('title').value.toString(),
-                    image: element.child('image').value.toString(),
-                    show: element.child('show').value.toString()),
-              )
+                  .saveRemoteTask(TaskModel.fromFirebase(element.value as Map))
                   .then((value) {
                 getTaskData();
               });
@@ -92,19 +78,7 @@ class HomeController extends GetxController {
           getTaskData();
           for (var element in event.snapshot.children) {
             db
-                .update(TaskModel(
-                    progress: element.child('progress').value.toString(),
-                    status: element.child('status').value.toString(),
-                    key: element.child('key').value.toString(),
-                    time: element.child('time').value.toString(),
-                    date: element.child('date').value.toString(),
-                    priority:
-                        Priority.fromStorage(element.child('periority').value),
-                    description: element.child('description').value.toString(),
-                    category: element.child('category').value.toString(),
-                    title: element.child('title').value.toString(),
-                    image: element.child('image').value.toString(),
-                    show: element.child('show').value.toString()))
+                .update(TaskModel.fromFirebase(element.value as Map))
                 .then((value) {
               getTaskData();
             });
