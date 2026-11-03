@@ -16,6 +16,24 @@ TaskModel taskWithProgress(String progress) => TaskModel(
     );
 
 void main() {
+  test('stored priorities keep their values and display Portuguese labels', () {
+    const labels = {'High': 'Alta', 'Medium': 'Média', 'Low': 'Baixa'};
+    for (final entry in labels.entries) {
+      final task = TaskModel.fromMap({'periority': entry.key});
+      expect(task.priorityLabel, entry.value);
+      expect(task.toMap()['periority'], entry.key);
+    }
+  });
+
+  test('missing and invalid stored priorities default to High', () {
+    expect(TaskModel.fromMap({}).priorityLabel, 'Alta');
+    for (final value in [null, '', 'null', 'Unknown', 42]) {
+      final task = TaskModel.fromMap({'periority': value});
+      expect(task.priorityLabel, 'Alta');
+      expect(task.toMap()['periority'], 'High');
+    }
+  });
+
   test('progress values are exposed as a percentage and fraction', () {
     final task = taskWithProgress('35');
 

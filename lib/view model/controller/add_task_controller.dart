@@ -36,7 +36,7 @@ class AddTaskController extends GetxController {
     category.value.text = task.category ?? '';
     description.value.text = task.description ?? '';
     selectedImageIndex.value = _imageIndex(task.image);
-    periority.value = task.periority ?? 'High';
+    periority.value = TaskModel.normalizePriority(task.periority);
     time.value = task.time ?? '';
     date.value = task.date ?? '';
     progress.value = double.tryParse(task.progress ?? '') ?? 0;

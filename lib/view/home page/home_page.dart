@@ -162,10 +162,11 @@ class HomePage extends StatelessWidget {
                         return Column(
                           children: [
                             Container(
-                              height: 70,
+                              constraints: const BoxConstraints(minHeight: 70),
                               width: double.infinity,
                               padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
+                                  const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 8),
                               margin:
                                   const EdgeInsets.symmetric(horizontal: 30),
                               decoration: BoxDecoration(
@@ -193,14 +194,18 @@ class HomePage extends StatelessWidget {
                                   const SizedBox(
                                     width: 20,
                                   ),
-                                  Text(
-                                    'Create ${controller.list[index].title} for\n${controller.list[index].category}',
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700),
+                                  Expanded(
+                                    child: Text(
+                                      'Create ${controller.list[index].title} for\n'
+                                      '${controller.list[index].category}\n'
+                                      'Prioridade: ${controller.list[index].priorityLabel}',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700),
+                                    ),
                                   ),
-                                  const Spacer(),
+                                  const SizedBox(width: 8),
                                   const CircleAvatar(
                                     radius: 5,
                                     backgroundColor: Colors.purpleAccent,

@@ -169,6 +169,21 @@ void main() {
     expect(database.syncedUpdates.single.periority, 'Medium');
   });
 
+  test('editing and saving an invalid priority uses High', () async {
+    final database = FakeDbHelper();
+    final controller = AddTaskController(
+      database: database,
+      onRefresh: () async {},
+    );
+
+    for (final value in [null, '', 'null', 'Unknown']) {
+      controller.startEditing(existingTask()..periority = value);
+      expect(controller.periority.value, 'High');
+      expect(await controller.saveTask(), isTrue);
+      expect(database.syncedUpdates.last.periority, 'High');
+    }
+  });
+
   test('resetForm cancels editing without changing or saving the task', () {
     final database = FakeDbHelper();
     final task = existingTask();

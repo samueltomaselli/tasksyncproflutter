@@ -33,13 +33,25 @@ class TaskModel {
 
   double get progressFraction => progressPercentage / 100;
 
+  static String normalizePriority(Object? value) {
+    if (value == 'Medium') return 'Medium';
+    if (value == 'Low') return 'Low';
+    return 'High';
+  }
+
+  String get priorityLabel => switch (normalizePriority(periority)) {
+        'Medium' => 'Média',
+        'Low' => 'Baixa',
+        _ => 'Alta',
+      };
+
   TaskModel.fromMap(Map<String, dynamic> res) {
     key = res['key'];
     title = res['title'];
     category = res['category'];
     description = res['description'];
     image = res['image'];
-    periority = res['periority'];
+    periority = normalizePriority(res['periority']);
     show = res['show'];
     time = res['time'];
     date = res['date'];
