@@ -1,12 +1,30 @@
 import 'dart:core';
 
+enum Priority {
+  high('High', 'Alta'),
+  medium('Medium', 'Média'),
+  low('Low', 'Baixa');
+
+  const Priority(this.storedValue, this.label);
+
+  final String storedValue;
+  final String label;
+
+  static Priority fromStorage(Object? value) {
+    for (final priority in values) {
+      if (priority.storedValue == value) return priority;
+    }
+    return high;
+  }
+}
+
 class TaskModel {
   String? key;
   String? title;
   String? category;
   String? description;
   String? image;
-  String? periority;
+  Priority priority;
   String? time;
   String? date;
   String? show;
@@ -17,7 +35,7 @@ class TaskModel {
       {required this.key,
       required this.time,
       required this.date,
-      required this.periority,
+      required this.priority,
       required this.description,
       required this.category,
       required this.title,
@@ -33,25 +51,15 @@ class TaskModel {
 
   double get progressFraction => progressPercentage / 100;
 
-  static String normalizePriority(Object? value) {
-    if (value == 'Medium') return 'Medium';
-    if (value == 'Low') return 'Low';
-    return 'High';
-  }
+  String get priorityLabel => priority.label;
 
-  String get priorityLabel => switch (normalizePriority(periority)) {
-        'Medium' => 'Média',
-        'Low' => 'Baixa',
-        _ => 'Alta',
-      };
-
-  TaskModel.fromMap(Map<String, dynamic> res) {
+  TaskModel.fromMap(Map<String, dynamic> res)
+      : priority = Priority.fromStorage(res['periority']) {
     key = res['key'];
     title = res['title'];
     category = res['category'];
     description = res['description'];
     image = res['image'];
-    periority = normalizePriority(res['periority']);
     show = res['show'];
     time = res['time'];
     date = res['date'];
@@ -66,7 +74,7 @@ class TaskModel {
       'category': category,
       'description': description,
       'image': image,
-      'periority': periority,
+      'periority': priority.storedValue,
       'time': time,
       'date': date,
       'show': show,

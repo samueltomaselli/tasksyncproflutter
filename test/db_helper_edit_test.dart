@@ -13,7 +13,7 @@ TaskModel taskWithTitle(String title) => TaskModel(
       category: 'Work',
       description: 'Description',
       image: 'assets/images/back2.jpg',
-      periority: 'Low',
+      priority: Priority.low,
       time: '09:30 AM',
       date: '10 Sep 2030',
       show: 'yes',
