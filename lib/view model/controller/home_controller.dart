@@ -68,8 +68,8 @@ class HomeController extends GetxController {
                     progress: element.child('progress').value.toString(),
                     status: element.child('status').value.toString(),
                     date: element.child('date').value.toString(),
-                    priority: Priority.fromStorage(
-                        element.child('periority').value),
+                    priority:
+                        Priority.fromStorage(element.child('periority').value),
                     description: element.child('description').value.toString(),
                     category: element.child('category').value.toString(),
                     title: element.child('title').value.toString(),
@@ -98,8 +98,8 @@ class HomeController extends GetxController {
                     key: element.child('key').value.toString(),
                     time: element.child('time').value.toString(),
                     date: element.child('date').value.toString(),
-                    priority: Priority.fromStorage(
-                        element.child('periority').value),
+                    priority:
+                        Priority.fromStorage(element.child('periority').value),
                     description: element.child('description').value.toString(),
                     category: element.child('category').value.toString(),
                     title: element.child('title').value.toString(),
