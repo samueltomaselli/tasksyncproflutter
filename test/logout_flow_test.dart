@@ -98,6 +98,17 @@ void main() {
 
   late Directory tempDir;
   late _FakeConnectivityPlatform connectivity;
+
+  /// Opens the home screen offline, so the sync on start leaves the pending
+  /// tasks alone, then brings the network back without a change event.
+  _RecordingController offlineAtStart(_RecordingController Function() create) {
+    final network = connectivity.current;
+    connectivity.current = [ConnectivityResult.none];
+    final controller = create();
+    connectivity.current = network;
+    return controller;
+  }
+
   late List<String> uploaded;
 
   setUp(() {
@@ -192,7 +203,8 @@ void main() {
   testWidgets('with pending tasks it warns how many will be lost',
       (tester) async {
     await _insertPending(tester, ['a', 'b']);
-    final controller = _RecordingController(dbHelper: dbHelper());
+    final controller =
+        offlineAtStart(() => _RecordingController(dbHelper: dbHelper()));
 
     await startLogout(tester, controller);
 
@@ -204,7 +216,8 @@ void main() {
   testWidgets('cancelling the warning uploads nothing and keeps the tasks',
       (tester) async {
     await _insertPending(tester, ['a', 'b']);
-    final controller = _RecordingController(dbHelper: dbHelper());
+    final controller =
+        offlineAtStart(() => _RecordingController(dbHelper: dbHelper()));
 
     await startLogout(tester, controller);
     await tapButton(tester, 'Cancel');
@@ -218,7 +231,8 @@ void main() {
       (tester) async {
     connectivity.current = [ConnectivityResult.none];
     await _insertPending(tester, ['a', 'b']);
-    final controller = _RecordingController(dbHelper: dbHelper());
+    final controller =
+        offlineAtStart(() => _RecordingController(dbHelper: dbHelper()));
 
     await startLogout(tester, controller);
     await tapButton(tester, 'Logout anyway');
@@ -232,7 +246,8 @@ void main() {
   testWidgets('online, it uploads everything before logging out',
       (tester) async {
     await _insertPending(tester, ['a', 'b']);
-    final controller = _RecordingController(dbHelper: dbHelper());
+    final controller =
+        offlineAtStart(() => _RecordingController(dbHelper: dbHelper()));
 
     await startLogout(tester, controller);
     await tapButton(tester, 'Logout anyway');
@@ -247,8 +262,8 @@ void main() {
   group('when some uploads still fail', () {
     testWidgets('the user can stay and keep the tasks', (tester) async {
       await _insertPending(tester, ['good', 'bad']);
-      final controller =
-          _RecordingController(dbHelper: dbHelper(failingKeys: {'bad'}));
+      final controller = offlineAtStart(
+          () => _RecordingController(dbHelper: dbHelper(failingKeys: {'bad'})));
 
       await startLogout(tester, controller);
       await tapButton(tester, 'Logout anyway');
@@ -266,8 +281,8 @@ void main() {
 
     testWidgets('the user can leave anyway and lose them', (tester) async {
       await _insertPending(tester, ['good', 'bad']);
-      final controller =
-          _RecordingController(dbHelper: dbHelper(failingKeys: {'bad'}));
+      final controller = offlineAtStart(
+          () => _RecordingController(dbHelper: dbHelper(failingKeys: {'bad'})));
 
       await startLogout(tester, controller);
       await tapButton(tester, 'Logout anyway');
@@ -281,10 +296,10 @@ void main() {
         'an upload that never answers counts as failed after the timeout',
         (tester) async {
       await _insertPending(tester, ['stuck']);
-      final controller = _RecordingController(
-        dbHelper: dbHelper(stuckKeys: {'stuck'}),
-        logoutSyncTimeout: const Duration(milliseconds: 100),
-      );
+      final controller = offlineAtStart(() => _RecordingController(
+            dbHelper: dbHelper(stuckKeys: {'stuck'}),
+            logoutSyncTimeout: const Duration(milliseconds: 100),
+          ));
 
       await startLogout(tester, controller);
       await tester.tap(find.widgetWithText(TextButton, 'Logout anyway'));
@@ -302,6 +317,9 @@ void main() {
 
       await tapButton(tester, 'Stay');
       expect(controller.logoutCalls, 0);
+
+      // Let the per-task upload timeout run out before the test ends.
+      await tester.pump(const Duration(seconds: 5));
     });
   });
 }

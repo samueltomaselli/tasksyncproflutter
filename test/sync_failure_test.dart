@@ -133,6 +133,20 @@ void main() {
 
       expect(await controller.syncPendingUploads(), 0);
     });
+
+    test('counts an upload that never answers as failed', () async {
+      await _insertPending('slow');
+      final controller = HomeController(
+        dbHelper: DbHelper(
+          updateRemoteTask: (task) => Completer<void>().future,
+          uploadTimeout: const Duration(milliseconds: 50),
+        ),
+      );
+
+      expect(await controller.syncPendingUploads(), 1);
+      final stillPending = await controller.db.getPendingUploads();
+      expect(stillPending.map((task) => task.key), ['slow']);
+    });
   });
 
   group('after connectivity returns', () {
