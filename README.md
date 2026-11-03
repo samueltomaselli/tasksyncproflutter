@@ -40,6 +40,139 @@ Cada integrante da equipe entrega seu diário de bordo individual (modelo "Diár
 
 ---
 
+## Sprint 2 — Análise, Projeto e Desenvolvimento Ágil (Equipe 6)
+
+> Esta seção documenta o Sprint 2 (N2). Além de atender o pedido do cliente, o foco foi a qualidade técnica: teste antes de mexer no código, refatoração com teste de regressão, revisão por Pull Request e integração contínua.
+
+**Papéis no Sprint 2:** Samuel Henrique Tomaselli (Scrum Master), Davi Scheuer (Product Owner), Gustavo Nascimento Caballero, Hallan Rauber Sbardelatti e Otavio Augusto dos Santos (Devs).
+
+### Contexto (pedido do cliente)
+
+> "Uma tarefa que eu criei sumiu sem eu apagar, acho que foi quando fiquei sem internet por um tempo." — relato da professora para o TaskSync Pro.
+
+Investigando o código, a equipe encontrou a causa: ao criar uma tarefa com rede conectada mas sem internet, o `insert` do `DbHelper` gravava só na tabela `Tasks`, chamava o Firebase sem esperar a resposta e ignorava o erro. A tarefa nunca entrava na fila de envio (`PendingUploads`) e se perdia no logout, na reinstalação ou em outro aparelho. Além disso, o app não avisava o usuário de nada.
+
+### Sprint Goal
+
+Garantir que uma tarefa criada pelo usuário não se perca quando a conexão falha e que o usuário seja avisado quando algo não sincronizar, sem quebrar o que já funcionava na N1.
+
+### User Story
+
+**Como** usuário do TaskSync Pro, **quero** que as tarefas que eu crio sem internet fiquem salvas e sejam enviadas quando a conexão voltar, **para** não perder nada e saber quando alguma tarefa ainda não foi salva na nuvem.
+
+**Verificação INVEST**
+
+| Critério | Como a história atende |
+|---|---|
+| Independente | Pode ser entregue sem depender de outras histórias do backlog. |
+| Negociável | O formato do aviso (banner, mensagem, diálogo) foi decidido pela equipe junto com o PO. |
+| Valiosa | Resolve a perda de dados relatada pelo cliente. |
+| Estimável | O problema foi localizado no `insert` e na sincronização do `DbHelper`. |
+| Pequena | Coube no Sprint 2, dividida em dois PRs (#11 e #10). |
+| Testável | Cada critério de aceite abaixo tem teste automatizado. |
+
+**Critérios de aceite**
+
+- **Dado** que o usuário está sem internet, **quando** ele cria uma tarefa, **então** ela aparece na lista e fica na fila de envio.
+- **Dado** que existe tarefa na fila de envio, **quando** a internet volta, **então** a tarefa é enviada ao Firebase e sai da fila.
+- **Dado** que o envio de uma tarefa falhou, **quando** o usuário reabre o app, **então** a tarefa continua na lista e o envio é tentado de novo.
+- **Dado** que existem tarefas pendentes, **quando** o usuário está na tela inicial, **então** aparece um aviso com quantas tarefas faltam sincronizar.
+- **Dado** que o envio falhou, **quando** a sincronização termina, **então** o usuário recebe uma mensagem de que a tarefa ainda não foi salva na nuvem.
+- **Dado** que existem tarefas pendentes, **quando** o usuário tenta sair da conta, **então** o app avisa quantas tarefas serão perdidas antes de confirmar.
+- **Dado** que a gravação local falhou, **quando** o usuário cria a tarefa, **então** o erro aparece na tela e o formulário não fecha.
+
+### Backlog do Sprint 2
+
+| Item | Descrição | Tipo | Estimativa (Planning Poker) | MoSCoW | Justificativa | Status |
+|---|---|---|---|---|---|---|
+| US01 | Tarefa criada offline não pode se perder (fila de envio e nova tentativa) | Correção | 8 | Must have | É o pedido central do cliente. | ✅ Concluído (PR #11) |
+| US02 | Avisar o usuário sobre tarefas não sincronizadas e proteger o logout | Funcionalidade | 8 | Must have | A falha não pode ser silenciosa, segunda parte do pedido. | ✅ Concluído (PR #10) |
+| PEND01 | Prioridade em três níveis visível nos cards e compatível com dados antigos (pendência da N1) | Funcionalidade | 3 | Should have | A prioridade Média já existia desde a N1, faltava exibir e tratar valores antigos. | ✅ Concluído (PR #13) |
+| SM01 | Smell 1: SQL das tabelas repetido no `onCreate` | Refatoração | 3 | Should have | Exigência da N2 e base para a migração do banco. | ✅ Concluído (PR #15 e #16) |
+| SM02 | Smell 2: prioridade como texto solto no código | Refatoração | 3 | Should have | Exigência da N2 e sugestão da avaliação de pares da N1. | ✅ Concluído (PR #14) |
+| SM03 | Smell 3: conversão do Firebase para tarefa duplicada | Refatoração | 2 | Should have | Exigência da N2, evita ler tarefas novas e editadas de jeitos diferentes. | ✅ Concluído (PR #16) |
+| BUG01 | Colunas sem tipo e coluna `TEXT` criada por engano no banco (migração para v2) | Correção | 5 | Could have | Corrige o schema sem perder as tarefas já salvas. | ✅ Concluído (PR #15) |
+| BUG02 | Testes falhando no macOS e Windows por causa do Firebase | Correção | 1 | Must have | Sem isso a suíte não rodava nas máquinas da equipe. | ✅ Concluído (PR #12) |
+| CI01 | Pipeline de CI com `flutter analyze` e `flutter test` | Configuração | 2 | Must have | Exigência da N2 e compromisso da retrospectiva da N1. | ✅ Concluído (PR #9) |
+
+**Pendências para o próximo Sprint** (bugs encontrados durante o Sprint 2):
+
+- A mensagem de tarefa não sincronizada pode aparecer várias vezes quando a conexão volta.
+- Se o primeiro envio depois de reconectar estourar o tempo limite, o app só tenta de novo quando a conexão muda outra vez ou o app é reaberto.
+- A busca da tela inicial não filtra a lista.
+- O botão Voltar do Android na tela de tarefas volta para a splash e trava.
+- Cadastro com e-mail que tem ponto antes do @ (ex.: `nome.sobrenome@gmail.com`) quebra, porque essa parte vira caminho no Realtime Database.
+- `TaskModel.fromFirebase` usa `element.value as Map` e lança erro se um nó do Firebase vier vazio.
+
+### Definition of Done (DoD)
+
+Uma história ou tarefa só está pronta quando:
+
+- tem teste automatizado cobrindo o caminho principal (correção de bug com teste que falha antes e passa depois, refatoração com teste de regressão que passa antes e depois)
+- não introduz code smell conhecido
+- foi revisada por pelo menos um colega, com comentário registrado no próprio PR
+- o CI (`dart format`, `flutter analyze` e `flutter test`) está verde
+- qualquer mudança no formato de dado continua lendo os dados já salvos
+- está mergeada na `main`
+
+### Catálogo de code smells
+
+| # | Onde está | Smell | Refatoração aplicada | Teste de regressão | Tipo |
+|---|---|---|---|---|---|
+| 1 | `lib/view model/DbHelper/db_helper.dart`, `onCreate` criando `Tasks`, `PendingUploads` e `PendingDeletes` | Código duplicado: a mesma lista de colunas escrita três vezes no `CREATE TABLE` | Extrair a lista de colunas para a constante `_taskColumns` e gerar as três tabelas a partir dela em `createSchema` (PR #15 e #16) | `test/db_table_columns_test.dart` (colunas das três tabelas e leitura de volta) e `test/db_schema_migration_test.dart` | Refatoração |
+| 2 | `lib/view model/controller/add_task_controller.dart` e `lib/view/new task/components/title.dart`, valores `'High'`, `'Medium'` e `'Low'` escritos à mão | Obsessão por tipos primitivos: prioridade como `String` solta, um erro de digitação passa sem aviso | Substituir o texto pelo `enum Priority { high, medium, low }`, mantendo `'High'`, `'Medium'` e `'Low'` no SQLite e no Firebase para ler dados antigos (PR #14) | `test/task_model_test.dart` (valores salvos, ausentes e inválidos) | Refatoração |
+| 3 | `lib/view model/controller/home_controller.dart`, listeners `onValue` e `onChildChanged` | Código duplicado: o mesmo bloco de onze linhas convertendo um nó do Firebase em `TaskModel` | Extrair o construtor `TaskModel.fromFirebase` e usar nos dois listeners (PR #16, feito em Pair Programming) | `test/task_model_from_firebase_test.dart` (todos os campos, números, campos ausentes e ida e volta) | Refatoração |
+| 4 | `lib/view model/DbHelper/db_helper.dart`, checagem de conexão em `insert`, `removeFromList` e `updateAndSync` | Código duplicado com regras divergentes: quatro cópias da checagem "está online?", e o `insert` ignorava ethernet | Extrair o método único `DbHelper.isOnline()` (PR #11) | `test/db_helper_connectivity_test.dart` e `test/db_helper_edit_test.dart` | Refatoração dentro de uma correção de bug |
+
+### Pull Requests principais
+
+Os PRs da história, da pendência da N1 e dos smells foram revisados por um colega, com comentário no PR, e entraram com o CI verde.
+
+- [PR #11](https://github.com/samueltomaselli/tasksyncproflutter/pull/11) — Tarefa criada sem internet entra na fila de envio e só sai quando o Firebase confirma (US01)
+- [PR #10](https://github.com/samueltomaselli/tasksyncproflutter/pull/10) — Aviso de tarefas não sincronizadas, mensagem de falha e logout protegido (US02)
+- [PR #13](https://github.com/samueltomaselli/tasksyncproflutter/pull/13) — Prioridade exibida nos cards e compatível com dados antigos (PEND01)
+- [PR #14](https://github.com/samueltomaselli/tasksyncproflutter/pull/14) — Prioridade como enum (Smell 2)
+- [PR #15](https://github.com/samueltomaselli/tasksyncproflutter/pull/15) — Migração do banco para a v2 com colunas tipadas (BUG01 e Smell 1)
+- [PR #16](https://github.com/samueltomaselli/tasksyncproflutter/pull/16) — `TaskModel.fromFirebase` e tabelas geradas da lista de colunas (Smell 3 e Smell 1)
+
+Também entraram, sem comentário de revisão registrado, por serem tarefas de configuração do ambiente (CI e execução dos testes):
+
+- [PR #9](https://github.com/samueltomaselli/tasksyncproflutter/pull/9) — Pipeline de CI no GitHub Actions (CI01)
+- [PR #12](https://github.com/samueltomaselli/tasksyncproflutter/pull/12) — Testes rodando sem Firebase em qualquer sistema (BUG02)
+
+### Integração contínua
+
+O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) roda a cada push na `main` e a cada Pull Request, com `dart format`, `flutter analyze` e `flutter test`. [Ver as execuções do CI no GitHub Actions](https://github.com/samueltomaselli/tasksyncproflutter/actions/workflows/ci.yml).
+
+### Como rodar os testes
+
+Na raiz do projeto:
+
+```
+flutter pub get
+flutter test
+```
+
+Para rodar as mesmas verificações do CI:
+
+```
+dart format --output=none --set-exit-if-changed .
+flutter analyze --no-fatal-infos
+flutter test
+```
+
+A suíte tem 80 testes e roda sem Firebase, então funciona em Linux, macOS e Windows.
+
+### Vídeo de demonstração
+
+[Vídeo do Sprint 2: tarefa criada offline, aviso de pendência, sincronização e testes passando](https://drive.google.com/file/d/13D5coNJibfO-V3xcfeq_H6iCaEQfiVbD/view?usp=sharing)
+
+### Diário de bordo
+
+Cada integrante entrega seu diário de bordo individual (modelo "Diário de Bordo N2") e o Skill Radar com a coluna da N2, fora deste repositório.
+
+---
+
 ## Instalação
 
 > **Rodando no Linux?** Veja [RUNNING_LINUX.md](RUNNING_LINUX.md) para configuração do Flutter/Android SDK via `mise`, uma correção de case-sensitivity, e como contornar um bug de foco de teclado entre o Android Emulator e o Hyprland usando `scrcpy`.
