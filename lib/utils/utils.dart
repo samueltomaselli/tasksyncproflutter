@@ -50,6 +50,19 @@ class Utils {
     );
   }
 
+  static String syncedTasksMessage(int count) {
+    final tasks = count == 1 ? '1 task' : '$count tasks';
+    return '$tasks synced to the cloud.';
+  }
+
+  static void showSyncSucceeded(int count) {
+    showSnackBar(
+      'Synced',
+      syncedTasksMessage(count),
+      const Icon(Icons.cloud_done, color: Colors.greenAccent),
+    );
+  }
+
   static String formateDate(DateTime date) {
     String formattedDate = DateFormat('d MMM y').format(date);
     return formattedDate;

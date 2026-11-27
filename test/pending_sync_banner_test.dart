@@ -149,7 +149,7 @@ void main() {
     test('drops to zero once connectivity returns and the upload succeeds',
         () async {
       await _insertPending('offline-1');
-      final controller = HomeController();
+      final controller = HomeController(syncSucceededCallback: (_) {});
       await controller.getTaskData();
       expect(controller.pendingCount.value, 1);
 
