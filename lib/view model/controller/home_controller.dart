@@ -27,6 +27,8 @@ class HomeController extends GetxController {
   final DbHelper db;
   // Called with the number of tasks that could not be uploaded in a sync round.
   final void Function(int failed) onSyncFailed;
+  // Called with the number of pending tasks uploaded in a sync round.
+  final void Function(int synced) onSyncSucceeded;
   // How long logout waits for pending uploads before giving up.
   final Duration logoutSyncTimeout;
   bool _syncingOnReconnect = false;
@@ -38,9 +40,11 @@ class HomeController extends GetxController {
   HomeController({
     DbHelper? dbHelper,
     void Function(int failed)? syncFailedCallback,
+    void Function(int synced)? syncSucceededCallback,
     this.logoutSyncTimeout = const Duration(seconds: 10),
   })  : db = dbHelper ?? DbHelper(),
-        onSyncFailed = syncFailedCallback ?? Utils.showSyncFailed {
+        onSyncFailed = syncFailedCallback ?? Utils.showSyncFailed,
+        onSyncSucceeded = syncSucceededCallback ?? Utils.showSyncSucceeded {
     // if name not loaded
     if (userData['NAME'] == null) {
       getUserData();
@@ -134,7 +138,7 @@ class HomeController extends GetxController {
     if (_syncingOnReconnect) return;
     _syncingOnReconnect = true;
     try {
-      final failed = await syncPendingUploads();
+      final (:synced, :failed) = await _uploadPending();
       final deletes = await db.getPendingDeletes();
       for (int i = 0; i < deletes.length; i++) {
         try {
@@ -145,6 +149,7 @@ class HomeController extends GetxController {
         }
       }
       await getTaskData();
+      if (synced > 0) onSyncSucceeded(synced);
       _reportFailures(failed);
     } finally {
       _syncingOnReconnect = false;
@@ -158,18 +163,22 @@ class HomeController extends GetxController {
 
   /// Tries to upload every task in PendingUploads and returns how many could
   /// not be uploaded. Those stay pending so a later round can retry them.
-  Future<int> syncPendingUploads() async {
+  Future<int> syncPendingUploads() async => (await _uploadPending()).failed;
+
+  Future<({int synced, int failed})> _uploadPending() async {
+    var synced = 0;
     var failed = 0;
     for (final task in await db.getPendingUploads()) {
       try {
         // Firebase waits instead of failing on a network without internet.
         await db.syncPendingUpload(task).timeout(db.uploadTimeout);
+        synced++;
       } catch (e) {
         failed++;
         debugPrint('Could not upload task ${task.key}: $e');
       }
     }
-    return failed;
+    return (synced: synced, failed: failed);
   }
 
   Future<int> countPendingUploads() async {

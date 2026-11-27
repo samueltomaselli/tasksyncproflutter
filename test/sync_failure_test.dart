@@ -187,6 +187,7 @@ void main() {
       final controller = HomeController(
         dbHelper: _dbHelperFailingFor({}),
         syncFailedCallback: reported.add,
+        syncSucceededCallback: (_) {},
       );
       await controller.getTaskData();
 
@@ -267,6 +268,7 @@ void main() {
       final controller = HomeController(
         dbHelper: _countingDbHelper(failingKeys, attempts),
         syncFailedCallback: reported.add,
+        syncSucceededCallback: (_) {},
       );
       await controller.getTaskData();
 
