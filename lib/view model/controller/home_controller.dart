@@ -30,6 +30,8 @@ class HomeController extends GetxController {
   // How long logout waits for pending uploads before giving up.
   final Duration logoutSyncTimeout;
   bool _syncingOnReconnect = false;
+  // Failed count of the last warning, so the same warning is not repeated.
+  int _lastReportedFailed = 0;
   RxList list = [].obs;
   Connectivity? connectivity;
   final searchController = TextEditingController().obs;
@@ -143,10 +145,15 @@ class HomeController extends GetxController {
         }
       }
       await getTaskData();
-      if (failed > 0) onSyncFailed(failed);
+      _reportFailures(failed);
     } finally {
       _syncingOnReconnect = false;
     }
+  }
+
+  void _reportFailures(int failed) {
+    if (failed > 0 && failed != _lastReportedFailed) onSyncFailed(failed);
+    _lastReportedFailed = failed;
   }
 
   /// Tries to upload every task in PendingUploads and returns how many could
