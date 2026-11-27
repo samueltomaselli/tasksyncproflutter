@@ -5,6 +5,7 @@
 //   a successful round reports nothing.
 // - The warning is not repeated while the number of failed tasks stays the
 //   same, and comes back when that number changes or after everything synced.
+// - When pending tasks are uploaded, the user is told how many were synced.
 // - Utils.showSyncFailed puts a message on screen saying the tasks are not
 //   saved to the cloud yet.
 import 'dart:async';
@@ -283,6 +284,95 @@ void main() {
       await _waitFor(() => reported.length == 2);
 
       expect(reported, [1, 1]);
+    });
+  });
+
+  group('pending tasks sent after connectivity returns', () {
+    test('tells how many pending tasks were synced', () async {
+      await _insertPending('good-1');
+      await _insertPending('good-2');
+      final synced = <int>[];
+      final failed = <int>[];
+      final controller = HomeController(
+        dbHelper: _dbHelperFailingFor({}),
+        syncFailedCallback: failed.add,
+        syncSucceededCallback: synced.add,
+      );
+      await controller.getTaskData();
+
+      connectivity.changes.add([ConnectivityResult.wifi]);
+      await _waitFor(() => synced.isNotEmpty);
+
+      expect(synced, [2]);
+      expect(failed, isEmpty);
+    });
+
+    test('says nothing when nothing was pending', () async {
+      final synced = <int>[];
+      final failed = <int>[];
+      final controller = HomeController(
+        dbHelper: _dbHelperFailingFor({}),
+        syncFailedCallback: failed.add,
+        syncSucceededCallback: synced.add,
+      );
+      await controller.getTaskData();
+
+      connectivity.changes.add([ConnectivityResult.wifi]);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+
+      expect(synced, isEmpty);
+      expect(failed, isEmpty);
+    });
+
+    test('tells what was synced and what is still pending, without repeating',
+        () async {
+      await _insertPending('good-1');
+      await _insertPending('good-2');
+      await _insertPending('bad');
+      final attempts = <String>[];
+      final synced = <int>[];
+      final failed = <int>[];
+      final controller = HomeController(
+        dbHelper: _countingDbHelper({'bad'}, attempts),
+        syncFailedCallback: failed.add,
+        syncSucceededCallback: synced.add,
+      );
+      await controller.getTaskData();
+
+      connectivity.changes.add([ConnectivityResult.wifi]);
+      await _waitFor(() => synced.isNotEmpty && failed.isNotEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      connectivity.changes.add([ConnectivityResult.mobile]);
+      await _waitFor(() => attempts.length == 4);
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      expect(synced, [2]);
+      expect(failed, [1]);
+      expect(controller.pendingCount.value, 1);
+    });
+  });
+
+  group('Utils.showSyncSucceeded', () {
+    test('words the message for one task and for several', () {
+      expect(Utils.syncedTasksMessage(1), '1 task synced to the cloud.');
+      expect(Utils.syncedTasksMessage(2), '2 tasks synced to the cloud.');
+    });
+
+    testWidgets('shows the message on screen', (tester) async {
+      await tester.pumpWidget(const GetMaterialApp(
+        home: Scaffold(body: SizedBox.expand()),
+      ));
+
+      Utils.showSyncSucceeded(2);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+
+      expect(find.text('Synced'), findsOneWidget);
+      expect(find.text('2 tasks synced to the cloud.'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
     });
   });
 
