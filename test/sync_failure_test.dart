@@ -3,6 +3,8 @@
 //   leaves those tasks pending, while the ones that worked leave the queue.
 // - When connectivity returns, a failed round reports the failures once,
 //   a successful round reports nothing.
+// - The warning is not repeated while the number of failed tasks stays the
+//   same, and comes back when that number changes or after everything synced.
 // - Utils.showSyncFailed puts a message on screen saying the tasks are not
 //   saved to the cloud yet.
 import 'dart:async';
@@ -60,6 +62,17 @@ Future<void> _insertPending(String key) async {
 /// A DbHelper whose uploads fail for every key in [failingKeys].
 DbHelper _dbHelperFailingFor(Set<String> failingKeys) {
   return DbHelper(updateRemoteTask: (task) async {
+    if (failingKeys.contains(task.key)) {
+      throw Exception('no connection');
+    }
+  });
+}
+
+/// A DbHelper whose uploads fail for every key currently in [failingKeys]
+/// and that counts every upload attempt in [attempts].
+DbHelper _countingDbHelper(Set<String> failingKeys, List<String> attempts) {
+  return DbHelper(updateRemoteTask: (task) async {
+    attempts.add(task.key!);
     if (failingKeys.contains(task.key)) {
       throw Exception('no connection');
     }
@@ -198,6 +211,78 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
       expect(reported, [1]);
+    });
+  });
+
+  group('repeated reconnections', () {
+    test('shows one message when connectivity returns twice in a row',
+        () async {
+      await _insertPending('bad');
+      final attempts = <String>[];
+      final reported = <int>[];
+      final controller = HomeController(
+        dbHelper: _countingDbHelper({'bad'}, attempts),
+        syncFailedCallback: reported.add,
+      );
+      await controller.getTaskData();
+
+      connectivity.changes.add([ConnectivityResult.wifi]);
+      await _waitFor(() => reported.isNotEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      connectivity.changes.add([ConnectivityResult.mobile]);
+      await _waitFor(() => attempts.length == 2);
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      expect(reported, [1]);
+    });
+
+    test('warns again when the number of failed tasks changes', () async {
+      await _insertPending('bad-1');
+      final attempts = <String>[];
+      final reported = <int>[];
+      final controller = HomeController(
+        dbHelper: _countingDbHelper({'bad-1', 'bad-2'}, attempts),
+        syncFailedCallback: reported.add,
+      );
+      await controller.getTaskData();
+
+      connectivity.changes.add([ConnectivityResult.wifi]);
+      await _waitFor(() => reported.isNotEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      await _insertPending('bad-2');
+      connectivity.changes.add([ConnectivityResult.mobile]);
+      await _waitFor(() => reported.length == 2);
+
+      expect(reported, [1, 2]);
+    });
+
+    test('warns again when a task fails after everything was synced', () async {
+      await _insertPending('first');
+      final failingKeys = {'first', 'second'};
+      final attempts = <String>[];
+      final reported = <int>[];
+      final controller = HomeController(
+        dbHelper: _countingDbHelper(failingKeys, attempts),
+        syncFailedCallback: reported.add,
+      );
+      await controller.getTaskData();
+
+      connectivity.changes.add([ConnectivityResult.wifi]);
+      await _waitFor(() => reported.isNotEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      failingKeys.remove('first');
+      connectivity.changes.add([ConnectivityResult.mobile]);
+      await _waitFor(() => controller.pendingCount.value == 0);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      await _insertPending('second');
+      connectivity.changes.add([ConnectivityResult.ethernet]);
+      await _waitFor(() => reported.length == 2);
+
+      expect(reported, [1, 1]);
     });
   });
 
