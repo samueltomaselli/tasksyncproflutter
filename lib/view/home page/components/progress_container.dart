@@ -10,8 +10,12 @@ import '../../common widgets/back_button.dart';
 
 class ProgressContainer extends StatelessWidget {
   final int index;
-  ProgressContainer({super.key, required this.index});
-  final controller = Get.put(HomeController());
+  final HomeController controller;
+  ProgressContainer({
+    super.key,
+    required this.index,
+    HomeController? controller,
+  }) : controller = controller ?? Get.put(HomeController());
 
   @override
   Widget build(BuildContext context) {
@@ -49,12 +53,27 @@ class ProgressContainer extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      controller.list[index].date,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12),
+                    Flexible(
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              controller.list[index].date,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12),
+                            ),
+                          ),
+                          Obx(
+                            () =>
+                                controller.isPending(controller.list[index].key)
+                                    ? const _PendingUploadMark()
+                                    : const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
                     ),
                     // Icon(Icons.more_vert_rounded,color: Colors.white,size: 20,)
                     SizedBox(
@@ -205,6 +224,26 @@ class ProgressContainer extends StatelessWidget {
             ),
           )
         ],
+      ),
+    );
+  }
+}
+
+class _PendingUploadMark extends StatelessWidget {
+  const _PendingUploadMark();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(left: 6),
+      child: Tooltip(
+        message: 'Aguardando envio',
+        child: Icon(
+          Icons.cloud_upload_outlined,
+          key: Key('pendingUploadIcon'),
+          color: Colors.orangeAccent,
+          size: 18,
+        ),
       ),
     );
   }
