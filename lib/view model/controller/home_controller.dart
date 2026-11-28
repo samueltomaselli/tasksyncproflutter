@@ -23,6 +23,8 @@ class HomeController extends GetxController {
   RxInt taskCount = 0.obs;
   // Tasks saved only on this device, still waiting to be uploaded.
   RxInt pendingCount = 0.obs;
+
+  final RxSet<String> pendingKeys = <String>{}.obs;
   RxBool hasData = false.obs;
   final DbHelper db;
   // Called with the number of tasks that could not be uploaded in a sync round.
@@ -187,9 +189,13 @@ class HomeController extends GetxController {
 
   getTaskData() async {
     list.value = await db.getDataWithPending();
-    pendingCount.value = (await db.getPendingUploads()).length;
+    final pending = await db.getPendingUploads();
+    pendingKeys.assignAll(pending.map((task) => task.key!));
+    pendingCount.value = pending.length;
     checkData();
   }
+
+  bool isPending(String? key) => key != null && pendingKeys.contains(key);
 
   Future<List<TaskModel>> getFututeData() {
     return db.getData();
@@ -253,6 +259,7 @@ class HomeController extends GetxController {
     hasData.value = false;
     taskCount.value = 0;
     pendingCount.value = 0;
+    pendingKeys.clear();
     Get.offAllNamed(Routes.signInScreen);
   }
 
